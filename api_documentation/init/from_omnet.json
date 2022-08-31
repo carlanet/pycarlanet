@@ -1,0 +1,21 @@
+{
+    "message_type": "INIT",
+    "timestamp": 0,
+    "run_id": "id_current_simulation",
+    "moving_actors":[
+        {
+            "actor_id": "car_id_1",
+            "actor_type": "car",
+            "actor_configuration": {
+                
+            }
+        }
+    ],
+    "carla_configuration": {
+        "seed": 11120,
+        "carla_timestep": 0.01        
+    },
+    "payload": {
+      "carla_world_configuration": "world_4"
+    }
+  }
