@@ -2,6 +2,7 @@ import abc
 
 import carla
 
+import OMNeTWorldListener
 from CarlaInetActor import CarlaInetActor
 from decorators import preconditions
 
@@ -15,8 +16,8 @@ class UnknownMessageCarlaInetError(RuntimeError):
 
 
 class CarlaInetManager:
-    def __init__(self, tick_callback):
-        self._tick_callback = tick_callback
+    def __init__(self, omnet_world_listener: OMNeTWorldListener):
+        self._omnet_world_listener = omnet_world_listener
         self._message_handler = None
         self._carla_inet_actors = dict()
 
@@ -31,9 +32,9 @@ class MessageHandlerState(abc.ABC):
     def __init__(self, carla_inet_manager: CarlaInetManager):
         self._manager = carla_inet_manager
 
-    def handle_message(self, message: CarlaInetManager):
-        raise RuntimeError(f"""I'm in the following state: {self.__class__.__name__} and 
-                    I don't know how to handle {message.__class__.__name__} message""")
+    def handle_message(self, message):
+        msg = self._handle_message(message)
+        msg['positions'] = self._generate_carla_nodes_positions
 
     @preconditions('_manager')
     def _generate_carla_nodes_positions(self):
@@ -48,3 +49,22 @@ class MessageHandlerState(abc.ABC):
             position['velocity'] = [velocity.x, velocity.y, velocity.z]
             nodes_positions.append(position)
         return nodes_positions
+
+    def _handle_message(self, message):
+        raise RuntimeError(f"""I'm in the following state: {self.__class__.__name__} and 
+                            I don't know how to handle {message.__class__.__name__} message""")
+
+
+class InitMessageHandlerState(MessageHandlerState):
+    INIT_MESSAGE_TYPE = 'INIT'
+
+    def _handle_message(self, message):
+        if message['message_type'] == self.INIT_MESSAGE_TYPE:
+            res = dict()
+            res['message_type'] = 'INIT_COMPLETED'
+            carla_timestamp = self._manager._omnet_world_listener.on_finished_creation_omnet_world(
+                message['carla_world_configuration'])
+            res['carla_timestamp'] = carla_timestamp
+            return res
+        else:
+            return super().handle_message(message)
