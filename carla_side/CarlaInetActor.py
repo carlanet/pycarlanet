@@ -20,3 +20,6 @@ class CarlaInetActor(abc.ABC):
 
     def init_actor(self, configuration):
         ...
+
+    def alive(self):
+        ...

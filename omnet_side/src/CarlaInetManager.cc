@@ -24,3 +24,21 @@ CarlaInetManager::~CarlaInetManager() {
     // TODO Auto-generated destructor stub
 }
 
+
+void CarlaInetManager::initialize(int stage)
+{
+    cSimpleModule::initialize(stage);
+    if (stage == INITSTAGE_LOCAL){
+        protocol = par("protocol").stdstringValue();
+        host = par("host").stdstringValue();
+        port = par("port");
+        timeout_ms = par("communicationTimeoutms");
+        simulationTimeStep = par("simulationTimeStep");
+        //findModulesToTrack();
+        //connect();
+    }
+
+    if (stage == INITSTAGE_SINGLE_MOBILITY){
+        //initializeCarla();
+    }
+}

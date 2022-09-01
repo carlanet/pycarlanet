@@ -15,11 +15,45 @@
 
 #ifndef CARLAINETMANAGER_H_
 #define CARLAINETMANAGER_H_
+#include <string>
+#include <list>
+#include <zmq.hpp>
+#include <iostream>
+#include <chrono>
+#include <thread>
 
-class CarlaInetManager {
+#include <map>
+#include <memory>
+#include <list>
+#include <queue>
+#include <fstream>
+#include <nlohmann/json.hpp>
+
+#include "omnetpp.h"
+#include "inet/common/INETDefs.h"
+using namespace std;
+using namespace omnetpp;
+using namespace inet;
+
+class CarlaInetManager: public cSimpleModule {
 public:
     CarlaInetManager();
     virtual ~CarlaInetManager();
+
+protected:
+    virtual int numInitStages() const override { return inet::NUM_INIT_STAGES; }
+    virtual void initialize(int stage) override;
+
+private:
+    string protocol;
+    string host;
+    double simulationTimeStep;
+    simtime_t initial_timestamp = 0;
+    int seed;
+    int port;
+    zmq::context_t context;
+    zmq::socket_t socket;
+    int timeout_ms;
 };
 
 #endif /* CARLAINETMANAGER_H_ */

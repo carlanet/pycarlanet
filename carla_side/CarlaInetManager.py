@@ -34,6 +34,7 @@ class CarlaInetManager:
     def _receive_data_from_omnet(self):
         message = self.socket.recv()
         json_data = json.loads(message.decode("utf-8"))
+        print(json_data)
         self.timestamp = json_data['timestamp']
         return json_data
 
@@ -46,12 +47,14 @@ class CarlaInetManager:
             self._send_data_to_omnet(answer)
 
     def _send_data_to_omnet(self, answer):
+        print(answer)
+
         self.socket.send(json.dumps(answer).encode('utf-8'))
 
     def set_message_handler_state(self, msg_handler_cls):
         self._message_handler = msg_handler_cls(self)
 
-    def add_dynamic_actor(self, actor_id: int, carla_inet_actor: CarlaInetActor):
+    def add_dynamic_actor(self, actor_id: str, carla_inet_actor: CarlaInetActor):
         """
         Used to create dynamically a new actor, both active and passive, and send its position to OMNeT
         :param actor_id:
@@ -60,7 +63,7 @@ class CarlaInetManager:
         """
         self._carla_inet_actors[actor_id] = carla_inet_actor
 
-    def remove_actor(self, actor_id: int):
+    def remove_actor(self, actor_id: str):
         """
         Remove actor from OMNeT world
         :param actor_id:
@@ -94,6 +97,7 @@ class MessageHandlerState(abc.ABC):
             position['position'] = [transform.location.x, transform.location.y, transform.location.z]
             position['rotation'] = [transform.rotation.pitch, transform.rotation.yaw, transform.rotation.roll]
             position['velocity'] = [velocity.x, velocity.y, velocity.z]
+            position['is_net_active'] = actor.alive()
             nodes_positions.append(position)
         return nodes_positions
 
@@ -117,8 +121,9 @@ class InitMessageHandlerState(MessageHandlerState):
                 static_inet_actor['actor_type'],
                 static_inet_actor['actor_configuration']
             )
-        res['carla_timestamp'] = carla_timestamp
-        res['positions'] = self._generate_carla_nodes_positions()
+        res['initial_timestamp'] = carla_timestamp
+        res['simulation_status'] = 0 # TODO change
+        res['actors_positions'] = self._generate_carla_nodes_positions()
         self._manager.set_message_handler_state(RunningMessageHandlerState)
         return res
 
