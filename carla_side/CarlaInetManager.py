@@ -4,7 +4,7 @@ import carla
 
 import OMNeTWorldListener
 from CarlaInetActor import CarlaInetActor
-from decorators import preconditions
+from utils.decorators import preconditions
 
 
 class UnknownMessageCarlaInetError(RuntimeError):
@@ -24,13 +24,29 @@ class CarlaInetManager:
     def set_message_handler_state(self, msg_handler_cls):
         self._message_handler = msg_handler_cls(self)
 
-    def subscribe_actor(self, actor_id: int, carla_inet_actor: CarlaInetActor):
+    def add_dynamic_actor(self, actor_id: int, carla_inet_actor: CarlaInetActor):
+        """
+        Used to create dynamically a new actor, both active and passive, and send its position to OMNeT
+        :param actor_id:
+        :param carla_inet_actor:
+        :return:
+        """
         self._carla_inet_actors[actor_id] = carla_inet_actor
+
+    def remove_actor(self, actor_id: int):
+        """
+        Remove actor from OMNeT world
+        :param actor_id:
+        :return:
+        """
+        del self._carla_inet_actors[actor_id]
 
 
 class MessageHandlerState(abc.ABC):
     def __init__(self, carla_inet_manager: CarlaInetManager):
         self._manager = carla_inet_manager
+        self.omnet_world_listener = self._manager._omnet_world_listener
+        self._carla_inet_actors = self._manager._carla_inet_actors
 
     def handle_message(self, message):
         msg = self._handle_message(message)
@@ -39,7 +55,7 @@ class MessageHandlerState(abc.ABC):
     @preconditions('_manager')
     def _generate_carla_nodes_positions(self):
         nodes_positions = []
-        for actor_id, actor in self._manager._carla_inet_actors.items():
+        for actor_id, actor in self._carla_inet_actors.items():
             transform: carla.Transform = actor.get_transform()
             velocity: carla.Vector3D = actor.get_velocity()
             position = dict()
@@ -58,13 +74,23 @@ class MessageHandlerState(abc.ABC):
 class InitMessageHandlerState(MessageHandlerState):
     INIT_MESSAGE_TYPE = 'INIT'
 
+    def __init__(self, carla_inet_manager: CarlaInetManager):
+        super().__init__(carla_inet_manager)
+
     def _handle_message(self, message):
         if message['message_type'] == self.INIT_MESSAGE_TYPE:
             res = dict()
             res['message_type'] = 'INIT_COMPLETED'
-            carla_timestamp = self._manager._omnet_world_listener.on_finished_creation_omnet_world(
+            carla_timestamp = self.omnet_world_listener.on_finished_creation_omnet_world(
                 message['carla_world_configuration'])
             res['carla_timestamp'] = carla_timestamp
+            self._manager.set_message_handler_state(RunningMessageHandlerState)
             return res
         else:
             return super().handle_message(message)
+
+
+class RunningMessageHandlerState(MessageHandlerState):
+
+    def _handle_message(self, message):
+        return super()._handle_message(message)

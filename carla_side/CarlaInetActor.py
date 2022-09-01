@@ -2,7 +2,7 @@ import abc
 
 import carla
 
-from decorators import preconditions
+from utils.decorators import preconditions
 
 
 # Decorator for carla.Actor
