@@ -13,22 +13,26 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package carla_inet;
+package carlainet;
 
-simple CarlaInetManager
-{
-    parameters:
-        @class(CarlaCommunicationManager);
-
-        string host = default("localhost");  // server hostname
-        string protocol = default("tcp");  // server hostname
-        double simulationTimeStep @unit("s") = default(5ms);
-        int port = default(5555);  // server port (-1: automatic)
-        int seed = default(-1); // seed value to set in launch configuration, if missing (-1: current run number)
-        string carlaConfiguration;
-        int communicationTimeoutms = default(1000);
-        //bool autoShutdown = default(true);  // Shutdown module as soon as no more vehicles are in the simulation
-
+import inet.mobility.base.MobilityBase;
+//
+// TODO auto-generated module
+//
+simple CarlaInetMobility extends MobilityBase {
+	parameters:
+        @class(CarlaInetMobility);
         @display("i=block/cogwheel");
+        @signal[mobilityStateChanged](type=inet::MobilityBase);
+        bool initFromDisplayString = default(true); // do not change this to false
+        
+        
+        string carlaActorType = default("car");
+        
+        object carlaActorConfiguration = default(parseJSON("{'test':'1'}"));
+        
+        //Specify the name of the route, <empty string> means that the route is randomly defined by Carla
+        //string route = default("");   
+        
+        
 }
-

@@ -13,12 +13,35 @@
 // along with this program.  If not, see http://www.gnu.org/licenses/.
 // 
 
-package carla_inet.simulations;
+package carlainet.simulations;
 
-import carla_inet.CarlaInetManager;
+import carlainet.CarlaInetManager;
+import carlainet.CarlaInetMobility;
+import inet.node.inet.WirelessHost;
+import inet.visualizer.contract.IIntegratedVisualizer;
+import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
+import inet.physicallayer.wireless.common.contract.packetlevel.IRadioMedium;
 
 network CarlaInetNetworkTest
 {
+    @display("bgb=250,134");
     submodules:
-        carlaInetManager: CarlaInetManager;
+        carlaInetManager: CarlaInetManager {
+            @display("p=122,75");
+        }
+        visualizer: <default(firstAvailableOrEmpty("IntegratedCanvasVisualizer"))> like IIntegratedVisualizer if typename != "" {
+            @display("p=580,125");
+        }
+        configurator: Ipv4NetworkConfigurator {
+            @display("p=580,200");
+        }
+        radioMedium: <default("UnitDiskRadioMedium")> like IRadioMedium {
+            @display("p=580,275");
+        }
+        
+        
+        host: WirelessHost {
+            mobility.typename = "CarlaInetMobility";
+            @display("p=55.89,39.329998");
+        }
 }

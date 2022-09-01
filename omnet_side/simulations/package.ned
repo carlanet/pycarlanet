@@ -1,3 +1,3 @@
-package carla_inet.simulations;
+package carlainet.simulations;
 
 @license(LGPL);
