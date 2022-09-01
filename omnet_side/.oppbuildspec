@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <buildspec version="4.0">
+<<<<<<< HEAD
     <dir makemake-options="--deep -O out -lzmq --meta:recurse --meta:use-exported-include-paths --meta:export-library --meta:use-exported-libs --meta:feature-cflags --meta:feature-ldflags" path="src" type="makemake"/>
+=======
+    <dir makemake-options="--deep --meta:recurse --meta:export-include-path --meta:use-exported-include-paths --meta:export-library --meta:use-exported-libs --meta:feature-cflags --meta:feature-ldflags" path="src" type="makemake"/>
+>>>>>>> e6a2006864112f323b2b036d7442e96c32e3724d
     <dir path="." type="custom"/>
 </buildspec>

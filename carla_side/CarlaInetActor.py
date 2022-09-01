@@ -2,7 +2,7 @@ import abc
 
 import carla
 
-from decorators import preconditions
+from utils.decorators import preconditions
 
 
 # Decorator for carla.Actor
@@ -19,4 +19,7 @@ class CarlaInetActor(abc.ABC):
         return self._model.__getattribute__(*args)
 
     def init_actor(self, configuration):
+        ...
+
+    def alive(self):
         ...

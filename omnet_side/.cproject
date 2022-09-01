@@ -110,5 +110,8 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope"/>
+<<<<<<< HEAD
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+=======
+>>>>>>> e6a2006864112f323b2b036d7442e96c32e3724d
 </cproject>

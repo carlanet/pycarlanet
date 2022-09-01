@@ -1,0 +1,26 @@
+{
+    "message_type": "INIT_COMPLETED",
+    "initial_timestamp": 0.05,
+    "actors_positions": [
+        {
+            "actor_id": "car",
+            "position": [
+              13.19999981,
+              -318.70001221,
+              0
+            ],
+            "velocity": [
+              0.1,
+              0.1,
+              0.1
+            ],
+            "rotation": [
+              0.1,
+              0.1,
+              0.1
+            ],
+            "is_net_active": true
+          }
+    ],
+    "simulation_status": 0
+}

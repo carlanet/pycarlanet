@@ -14,11 +14,14 @@ def closure(f):
     return closure_aux
 
 
-def preconditions(*members, valid=lambda *params: all(p is not None for p in params)):
+def preconditions(*members, msg_to_print=None, valid=lambda *params: all(p is not None for p in params)):
     def wrapper_method(method):
         def validation(ref, *args, **kwargs):
+            if msg_to_print is None:
+                print('ciao')
             if not valid(*(getattr(ref, member) for member in members)):
-                raise Exception(f"Violated prerequisites of method {method.__name__}")
+                msg = msg_to_print if msg_to_print else f"Violated prerequisites of method {method.__name__}"
+                raise Exception(msg)
             return method(ref, *args, **kwargs)
 
         return validation
