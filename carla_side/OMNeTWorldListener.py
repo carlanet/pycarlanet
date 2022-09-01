@@ -17,10 +17,12 @@ class OMNeTWorldListener(abc.ABC):
         ...
         ##return Actor
 
-    def on_finished_creation_omnet_world(self, carla_world_configuration) -> float:
+    def on_finished_creation_omnet_world(self, run_id, seed, carla_timestep, custom_params) -> float:
         """
-
-        :param carla_world_configuration: current omnet timestmap
+        :param run_id:
+        :param seed:
+        :param carla_timestep:
+        :param custom_params:
         :return: current carla world timestamp (see Snapshot class of CarlaAPI)
         """
         ...

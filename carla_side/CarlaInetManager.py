@@ -1,6 +1,7 @@
 import abc
 
 import carla
+import zmq
 
 import OMNeTWorldListener
 from CarlaInetActor import CarlaInetActor
@@ -16,10 +17,18 @@ class UnknownMessageCarlaInetError(RuntimeError):
 
 
 class CarlaInetManager:
-    def __init__(self, omnet_world_listener: OMNeTWorldListener):
+    def __init__(self, listening_port, omnet_world_listener: OMNeTWorldListener):
+        self._listening_port = listening_port
         self._omnet_world_listener = omnet_world_listener
         self._message_handler = None
         self._carla_inet_actors = dict()
+
+    def _start_server(self):
+        context = zmq.Context()
+        self.socket = context.socket(zmq.REP)
+        self.socket.setsockopt(zmq.CONFLATE, 1)
+        self.socket.bind(f"tcp://*:{self._listening_port}")
+        print("server running")
 
     def set_message_handler_state(self, msg_handler_cls):
         self._message_handler = msg_handler_cls(self)
@@ -49,8 +58,12 @@ class MessageHandlerState(abc.ABC):
         self._carla_inet_actors = self._manager._carla_inet_actors
 
     def handle_message(self, message):
-        msg = self._handle_message(message)
-        msg['positions'] = self._generate_carla_nodes_positions
+        message_type = message['message_type']
+        if hasattr(self, message_type):
+            meth = getattr(self, message_type)
+            return meth(message)
+        raise RuntimeError(f"""I'm in the following state: {self.__class__.__name__} and 
+                                    I don't know how to handle {message.__class__.__name__} message""")
 
     @preconditions('_manager')
     def _generate_carla_nodes_positions(self):
@@ -66,31 +79,28 @@ class MessageHandlerState(abc.ABC):
             nodes_positions.append(position)
         return nodes_positions
 
-    def _handle_message(self, message):
-        raise RuntimeError(f"""I'm in the following state: {self.__class__.__name__} and 
-                            I don't know how to handle {message.__class__.__name__} message""")
-
 
 class InitMessageHandlerState(MessageHandlerState):
-    INIT_MESSAGE_TYPE = 'INIT'
 
     def __init__(self, carla_inet_manager: CarlaInetManager):
         super().__init__(carla_inet_manager)
 
-    def _handle_message(self, message):
-        if message['message_type'] == self.INIT_MESSAGE_TYPE:
-            res = dict()
-            res['message_type'] = 'INIT_COMPLETED'
-            carla_timestamp = self.omnet_world_listener.on_finished_creation_omnet_world(
-                message['carla_world_configuration'])
-            res['carla_timestamp'] = carla_timestamp
-            self._manager.set_message_handler_state(RunningMessageHandlerState)
-            return res
-        else:
-            return super().handle_message(message)
+    def INIT(self, message):
+        res = dict()
+        res['message_type'] = 'INIT_COMPLETED'
+        carla_timestamp = self.omnet_world_listener.on_finished_creation_omnet_world(
+            message['run_id'],
+            *message['carla_configuration'],
+            message['user_defined'])
+        res['carla_timestamp'] = carla_timestamp
+        res['positions'] = self._generate_carla_nodes_positions
+        self._manager.set_message_handler_state(RunningMessageHandlerState)
+        return res
 
 
 class RunningMessageHandlerState(MessageHandlerState):
+    ...
 
-    def _handle_message(self, message):
-        return super()._handle_message(message)
+
+if __name__ == '__main__':
+    ...
