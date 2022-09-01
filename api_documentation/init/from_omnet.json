@@ -15,7 +15,7 @@
         "seed": 11120,
         "carla_timestep": 0.01        
     },
-    "payload": {
+    "user_defined": {
       "carla_world_configuration": "world_4"
     }
   }
