@@ -26,14 +26,15 @@ def test_init_with_my_client():
     carla_actor.get_transform.return_value = carla.Transform(carla.Location(1, 2, 3), carla.Rotation(1, 2, 3))
     carla_actor.get_velocity.return_value = carla.Vector3D(1, 2, 3)
     carla_actor.alive.return_value = True
-    omnet_worl_listener.on_finished_creation_omnet_world.return_value = carla_timestamp
+    omnet_worl_listener.on_finished_creation_omnet_world.return_value = carla_timestamp, 0
     omnet_worl_listener.on_static_actor_created.return_value = carla_actor
     p = _start_server(5555, omnet_worl_listener)
     init_request = _read_request('init')
     _send_message(s, init_request)
     msg = _receive_message(s)
-    assert msg['carla_timestamp'] == carla_timestamp
-    assert msg['positions'][0]['position'][0] == 1
+    #omnet_worl_listener.on_finished_creation_omnet_world.assert_called_once()
+    assert msg['initial_timestamp'] == carla_timestamp
+    assert msg['actors_positions'][0]['position'][0] == 1
     _end_server(p)
 
 
@@ -87,4 +88,4 @@ def _connect(host, port):
 
 
 if __name__ == '__main__':
-    test_init_with_omnet()
+    test_init_with_my_client()

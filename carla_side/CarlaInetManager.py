@@ -110,7 +110,7 @@ class InitMessageHandlerState(MessageHandlerState):
     def INIT(self, message):
         res = dict()
         res['message_type'] = 'INIT_COMPLETED'
-        carla_timestamp = self.omnet_world_listener.on_finished_creation_omnet_world(
+        carla_timestamp, sim_status = self.omnet_world_listener.on_finished_creation_omnet_world(
             message['run_id'],
             *message['carla_configuration'].values(),
             message['user_defined'])
@@ -122,14 +122,22 @@ class InitMessageHandlerState(MessageHandlerState):
                 static_inet_actor['actor_configuration']
             )
         res['initial_timestamp'] = carla_timestamp
-        res['simulation_status'] = 0 # TODO change
+        res['simulation_status'] = sim_status
         res['actors_positions'] = self._generate_carla_nodes_positions()
         self._manager.set_message_handler_state(RunningMessageHandlerState)
         return res
 
 
 class RunningMessageHandlerState(MessageHandlerState):
-    ...
+    def SIMULATION_STEP(self, message):
+        res = dict()
+        res['message_type'] = 'UPDATED_POSITIONS'
+        carla_timestamp, sim_status = self.omnet_world_listener.on_carla_simulation_step(message['timestamp'])
+        # res['']
+        ...
+
+    def GENERIC_MESSAGE(self, message):
+        ...
 
 
 class FinishedMessageHandlerState(MessageHandlerState):
