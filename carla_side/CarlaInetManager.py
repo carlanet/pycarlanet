@@ -141,7 +141,17 @@ class RunningMessageHandlerState(MessageHandlerState):
         return res
 
     def GENERIC_MESSAGE(self, message):
-        ...
+        res = dict()
+        res['message_type'] = 'GENERIC_RESPONSE'
+        sim_status, user_defined_response = self.omnet_world_listener.on_generic_message(message['timestamp'], message[
+            'user_defined_message'])
+
+        res['simulation_status'] = sim_status.value
+        res['user_defined_response'] = user_defined_response
+
+        if sim_status != SimulatorStatus.RUNNING:
+            self._manager.set_message_handler_state(FinishedMessageHandlerState)
+        return res
 
 
 class FinishedMessageHandlerState(MessageHandlerState):

@@ -45,3 +45,11 @@ class OMNeTWorldListener(abc.ABC):
         :return: current simulator status
         """
         ...
+
+    def on_generic_message(self, timestamp, user_defined_message) -> (SimulatorStatus, dict):
+        """
+        :param timestamp:
+        :param user_defined_message:
+        :return: (current simulator status, dict contained custom parameters)
+        """
+        ...
