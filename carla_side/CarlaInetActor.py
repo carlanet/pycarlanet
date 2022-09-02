@@ -18,8 +18,5 @@ class CarlaInetActor(abc.ABC):
     def __getattr__(self, *args):
         return self._model.__getattribute__(*args)
 
-    def init_actor(self, configuration):
-        ...
-
     def alive(self):
         ...

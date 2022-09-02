@@ -8,11 +8,13 @@ Listener for OMNeT world, note, every parameters gave as in input is a String, s
 """
 
 
+class SimulatorStatus(enum.Enum):
+    RUNNING = 0
+    FINISHED_OK = 1
+    FINISHED_ERROR = -1
+
+
 class OMNeTWorldListener(abc.ABC):
-    class SimulatorStatus(enum.Enum):
-        RUNNING = 0
-        FINISHED_OK = 1
-        FINISHED_ERROR = -1
 
     def on_static_actor_created(self, actor_id: str, actor_type: str, actor_config) -> CarlaInetActor:
         """
