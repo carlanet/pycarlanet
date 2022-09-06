@@ -77,7 +77,7 @@ def test_simulation_step_with_my_client():
     simulation_step_request = _read_request('simulation_step')
     _send_message(s, simulation_step_request)
     msg = _receive_message(s)
-    #omnet_worl_listener.on_carla_simulation_step.assert_called_once()
+    # omnet_worl_listener.on_carla_simulation_step.assert_called_once()
     _end_server(p)
 
 
