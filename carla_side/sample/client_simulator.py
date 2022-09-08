@@ -9,7 +9,7 @@ import zmq
 
 
 def read_json(type_request):
-    with open(f'documentation/api_carla_omnet/{type_request}/from_omnet.json') as f:
+    with open(f'../api_documentation/{type_request}/from_omnet.json') as f:
         return json.load(f)
 
 
@@ -36,11 +36,10 @@ socket.connect("tcp://localhost:5555")
 print("connected")
 
 req = read_json('init')
-req['payload']['run_id'] = str(datetime.now())
 send_info(socket, req)
 message = receive_info(socket)
-timestamp = message['payload']['initial_timestamp']
-limit_sim_time = 15
+timestamp = message['initial_timestamp']
+limit_sim_time = 150
 
 while True:
     for _ in np.arange(0, refresh_status, simulation_step):
@@ -51,28 +50,14 @@ while True:
         send_info(socket, req)
         message = receive_info(socket)
 
-    req = read_json('actor_status_update')
+    req = read_json('message')
     req['timestamp'] = timestamp
     send_info(socket, req)
     message = receive_info(socket)
-    status_id = message['payload']['status_id']
+    status_id = message['simulation_status']
     simulation_status = 0 if limit_sim_time > timestamp else 1
-    req = read_json('compute_instruction')
-    req['payload']['status_id'] = status_id
-    req['timestamp'] = timestamp
-    send_info(socket, req)
     if simulation_status != 0:
         break
-    message = receive_info(socket)
-    instruction_id = message['payload']['instruction_id']
-    if message['simulation_status'] != 0:
-        break
-
-    req = read_json('apply_instruction')
-    req['payload']['instruction_id'] = instruction_id
-    req['timestamp'] =  timestamp
-    send_info(socket, req)
-    message = receive_info(socket)
 
 # print(f"Received reply  [ {message} ]")
 # while True:

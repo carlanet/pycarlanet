@@ -43,7 +43,7 @@ class MyWorld(OMNeTWorldListener):
         self.client, self.sim_world = client, sim_world
         self.carla_map = self.sim_world.get_map()
 
-    def on_static_actor_created(self, actor_id: str, actor_type: str, actor_config) -> CarlaInetActor:
+    def on_static_actor_created(self, actor_id: str, actor_type: str, actor_config: dict) -> CarlaInetActor:
         if actor_type == 'car':  # and actor_id == 'car_1':
             blueprint: ActorBlueprint = random.choice(
                 self.sim_world.get_blueprint_library().filter("vehicle.tesla.model3"))
