@@ -7,15 +7,6 @@ from CarlaInetManager import CarlaInetManager
 from OMNeTWorldListener import OMNeTWorldListener, SimulatorStatus
 
 
-class MyActiveCarCarlaInetActor(CarlaInetActor):
-
-    def alive(self):
-        return True
-
-    def apply_command(self, command):
-        carla.command.ApplyVehicleControl(self.id, command)
-
-
 class MyWorld(OMNeTWorldListener):
     def __init__(self):
         self.carla_inet_manager = CarlaInetManager(5555, self)
@@ -70,7 +61,7 @@ class MyWorld(OMNeTWorldListener):
         else:
             raise RuntimeError(f'I don\'t know this type {actor_type}')
 
-        carla_inet_actor = MyActiveCarCarlaInetActor(carla_actor)
+        carla_inet_actor = CarlaInetActor(carla_actor, True)
         self.carla_inet_actors[actor_id] = carla_inet_actor
         return carla_inet_actor
 
