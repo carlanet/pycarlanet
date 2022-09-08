@@ -50,6 +50,6 @@ class OMNeTWorldListener(abc.ABC):
         """
         :param timestamp:
         :param user_defined_message:
-        :return: (current simulator status, dict contained custom parameters)
+        :return: (current simulator status, dict contained custom parameters not None)
         """
         ...

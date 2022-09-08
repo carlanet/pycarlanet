@@ -5,7 +5,7 @@ import carla
 from utils.decorators import preconditions
 
 
-# Decorator for carla.Actor
+# Pattern decorator for carla.Actor
 # NOTE: you can call each method of carla.Actor on this class, but if you want to pass an object of type
 # CarlaInetActor to a methods defined in carla you have to pass the attribute carla_actor
 # because carla can't see this class
@@ -17,8 +17,7 @@ class CarlaInetActor(abc.ABC):
 
     @preconditions('_carla_actor')
     def __getattr__(self, *args):
-        return self._model.__getattribute__(*args)
-
+        return self._carla_actor.__getattribute__(*args)
 
     def apply_command(self, command):
         carla.command.ApplyVehicleControl(self.id, command)
