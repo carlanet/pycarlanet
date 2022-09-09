@@ -42,9 +42,9 @@ public:
     void registerMobilityModule(CarlaInetMobility *mod);
 
     //API used by applications
-//    string getActorStatus(string actorId);
-//    string computeInstruction(string actorId, string statusId, string agentId);
-//    void applyInstruction(string actorId, string instructionId);
+    //    string getActorStatus(string actorId);
+    //    string computeInstruction(string actorId, string statusId, string agentId);
+    //    void applyInstruction(string actorId, string instructionId);
 
 
 protected:
@@ -63,8 +63,8 @@ private:
     void updateNodesPosition(std::list<carla_api_base::actor_position> actor);
 
     void sendToCarla(json msg);
-
     template<typename T> void receiveFromCarla(T *v,  double timeoutFactor = 1);
+
 
     bool connection;
     string protocol;
@@ -78,6 +78,15 @@ private:
     int timeout_ms;
     cMessage *simulationTimeStepEvent =  new cMessage("simulationTimeStep");
     map<string,CarlaInetMobility*> modulesToTrack = map<string,CarlaInetMobility*>();
+
+
+    //Handlers for dynamic actor creation/destroying
+    void createAndInitializeActor(carla_api_base::actor_position newActor);
+    void destroyActor(string actorId);
+    const char* networkActiveModuleType;
+//    const char* networkActiveModuleName;
+    const char* networkPassiveModuleType;
+//    const char* networkPassiveModuleName;
 };
 
 #endif

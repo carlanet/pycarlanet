@@ -15,6 +15,14 @@ simple CarlaInetManager
         //bool autoShutdown = default(true);  // Shutdown module as soon as no more vehicles are in the simulation
 		object extraInitParams = default(parseJSON("{}"));
 		
+		
+		//Parameters for dynamically generated actors
+		// IMPORTANT: all the node types have to use CarlaInetMobility as mobility module
+		string networkActiveModuleType;
+		//string networkActiveModuleName;
+		string networkPassiveModuleType;
+		//string networkPassiveModuleName;
+		
         @display("i=block/cogwheel");
 }
 

@@ -24,7 +24,6 @@ void CarlaInetMobility::initialize(int stage)
     MobilityBase::initialize(stage);
     if (stage == inet::INITSTAGE_LOCAL){
         carlaActorType = par("carlaActorType").stdstringValue();
-        EV_INFO << "PAR TYPE" << par("carlaActorConfiguration").getType() << endl;
         carlaActorConfiguration = check_and_cast<cValueMap*>(par("carlaActorConfiguration").objectValue()); //.cValueMap(); // .objectValue();
         auto carlaManager = check_and_cast<CarlaInetManager*>(getModuleByPath("<root>.carlaInetManager"));
         // register to carlaManager
@@ -32,8 +31,17 @@ void CarlaInetMobility::initialize(int stage)
     }
 }
 
-void CarlaInetMobility::preInitialize(const inet::Coord& position, double angle){
+void CarlaInetMobility::setInitialPosition(){
+    if (!preInitialized){
+        MobilityBase::setInitialPosition();
+    }
+}
 
+void CarlaInetMobility::preInitialize(const inet::Coord& position, const inet::Coord& velocity,  const inet::Quaternion& rotation){
+    preInitialized = true;
+    lastPosition = position;
+    lastVelocity = velocity;
+    lastOrientation = rotation;
 }
 
 

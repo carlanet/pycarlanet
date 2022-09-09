@@ -13,6 +13,9 @@
 #include "inet/transportlayer/contract/udp/UdpControlInfo_m.h"
 
 
+#include "inet/common/scenario/ScenarioManager.h"
+
+
 using namespace inet;
 using namespace std;
 
@@ -74,9 +77,15 @@ void CarlaInetManager::initialize(int stage)
     if (stage == INITSTAGE_LOCAL){
         protocol = par("protocol").stdstringValue();
         host = par("host").stdstringValue();
-        port = par("port");
+        port = par("port").intValue();
         timeout_ms = par("communicationTimeoutms");
         simulationTimeStep = par("simulationTimeStep");
+
+        networkActiveModuleType = par("networkActiveModuleType").stringValue();
+//        networkActiveModuleName = par("networkActiveModuleName").stringValue();
+        networkPassiveModuleType = par("networkPassiveModuleType").stringValue();
+//        networkPassiveModuleName = par("networkPassiveModuleName").stringValue();
+
         //findModulesToTrack();
         connect();
     }
@@ -156,17 +165,34 @@ void CarlaInetManager::doSimulationTimeStep(){
 
     //Update position of all nodes in response
 
-    updateNodesPosition(response.actors_postions);
+    updateNodesPosition(response.actors_positions);
 }
 
 void CarlaInetManager::updateNodesPosition(std::list<carla_api_base::actor_position> actors){
-    for(auto actor : actors){
-        EV << "Position" << actor.position <<endl;
+    set<string> knownActors = set<string>();
+    for(auto const& item: modulesToTrack)
+        knownActors.insert(item.first);
+
+    // Update the mobility of actors or create new ones in they do not exist
+    for(auto const &actor : actors){
+        if (knownActors.find(actor.actor_id) == knownActors.end()){  //NOT FOUND
+            createAndInitializeActor(actor);
+        }
+        else{
+            knownActors.erase(actor.actor_id);  //OK Found I can update it
+        }
+
         Coord position = Coord(actor.position[0], actor.position[1], actor.position[2]);
         Coord velocity = Coord(actor.velocity[0],actor.velocity[1],actor.velocity[2]);
         Quaternion rotation = Quaternion(EulerAngles(rad(actor.rotation[0]),rad(actor.rotation[1]),rad(actor.rotation[2])));
         modulesToTrack[actor.actor_id]->nextPosition(position, velocity, rotation);
     }
+
+    // remove actors which where known but CARLA has just destroyed
+    for (auto const &actorId : knownActors){
+        destroyActor(actorId);
+    }
+
 }
 
 
@@ -194,6 +220,68 @@ void CarlaInetManager::handleMessage(cMessage *msg)
     }
 }
 
+/* ***********************************
+ * Dynamic creation/destroying actors
+ * ********************************** */
+void CarlaInetManager::createAndInitializeActor(carla_api_base::actor_position newActor){
+    auto newActorModuleType = newActor.is_net_active ? networkActiveModuleType : networkPassiveModuleType;
+    //auto newActorModuleName = newActor.is_net_active ? networkActiveModuleName : networkPassiveModuleName;
+
+    cModule* root = getSimulation()->getSystemModule();
+    cModuleType *actorType = cModuleType::get(newActorModuleType);
+    cModule* new_mod = actorType->create(newActor.actor_id.c_str(), root);
+    new_mod->finalizeParameters();
+    //        if (displayString.length() > 0) {
+    //            mod->getDisplayString().parse(displayString.c_str());
+    //        }
+    new_mod->buildInside();
+    new_mod->scheduleStart(simTime());
+
+
+    // Pre initialize mobility
+    Coord position = Coord(newActor.position[0], newActor.position[1], newActor.position[2]);
+    Coord velocity = Coord(newActor.velocity[0],newActor.velocity[1],newActor.velocity[2]);
+    Quaternion rotation = Quaternion(EulerAngles(rad(newActor.rotation[0]),rad(newActor.rotation[1]),rad(newActor.rotation[2])));
+    auto carlaInetMobilityMod = check_and_cast<CarlaInetMobility *>(new_mod->getSubmodule("mobility"));
+
+    //EV_INFO << carlaInetMobilityMod->getModuleType() << endl;
+
+    carlaInetMobilityMod->preInitialize(position, velocity, rotation);
+
+    //preInitializeModule(mod, nodeId, position, road_id, speed, heading, signals);
+
+    // The INET visualizer listens to model change notifications on the
+    // network object by default. We assume this is our parent.
+
+    auto* notification = new inet::cPreModuleInitNotification();
+    notification->module = new_mod;
+    root->emit(POST_MODEL_CHANGE, notification, NULL);
+
+
+
+
+    //emit(traciModulePreInitSignal, mod);
+
+    new_mod->callInitialize();
+    //hosts[nodeId] = mod;
+
+
+    //cModule *mod = moduleType->createScheduleInit(newActorModuleName, root);
+
+}
+
+
+void CarlaInetManager::destroyActor(string actorId){
+    //NOTE the map contains the reference to the mobilityModule
+    // This implementation assumes that mobility module is a direct child of the actor module
+    auto mod = modulesToTrack[actorId]->getParentModule();
+
+    mod->callFinish();
+    mod->deleteModule();
+
+    modulesToTrack.erase(actorId);
+
+}
 
 ///*
 // * PUBLIC APIs

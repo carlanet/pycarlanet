@@ -88,10 +88,10 @@ namespace carla_api{
     /* CARLA --> OMNET */
     struct updated_postion {
         std::string message_type = "UPDATED_POSITIONS";
-        std::list<carla_api_base::actor_position> actors_postions;
+        std::list<carla_api_base::actor_position> actors_positions;
         int simulation_status;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(updated_postion, message_type, actors_postions, simulation_status)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(updated_postion, message_type, actors_positions, simulation_status)
 
 
     struct generic_message {

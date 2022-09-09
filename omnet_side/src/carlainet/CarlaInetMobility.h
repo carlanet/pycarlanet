@@ -31,8 +31,9 @@ class CarlaInetMobility : public inet::MobilityBase
 {
 public:
     /** @brief called by class CarlaCommunicationManager */
-    virtual void preInitialize(const inet::Coord& position, double angle);
+    virtual void preInitialize(const inet::Coord& position, const inet::Coord& velocity,  const inet::Quaternion& rotation);
     virtual void initialize(int stage) override;
+
 
     /** @brief called by class CarlaCommunicationManager */
     virtual void nextPosition(const inet::Coord& position, const inet::Coord& velocity,  const inet::Quaternion& rotation);
@@ -55,6 +56,8 @@ protected:
     /** This must be implemented as described in MobilityBase*/
     virtual void handleSelfMessage(cMessage *msg) override;
 
+    virtual void setInitialPosition() override;
+
     /** @brief The last velocity that was set by nextPosition(). */
     inet::Coord lastVelocity;
     /** @brief The last angular velocity that was set by nextPosition(). */
@@ -63,6 +66,7 @@ protected:
 private:
     string carlaActorType;
     cValueMap* carlaActorConfiguration;
+    bool preInitialized = false;  // this field is set during dynamic module creation
 
 //private:
 //    CarlaCommunicationManager *manager = nullptr;

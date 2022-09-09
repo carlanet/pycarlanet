@@ -17,6 +17,8 @@ package carlainet.simulations;
 
 import carlainet.CarlaInetManager;
 import carlainet.CarlaInetMobility;
+import inet.node.contract.INetworkNode;
+import inet.node.base.NodeBase;
 import inet.node.inet.WirelessHost;
 import inet.visualizer.contract.IIntegratedVisualizer;
 import inet.networklayer.configurator.ipv4.Ipv4NetworkConfigurator;
@@ -29,7 +31,7 @@ network CarlaInetNetworkTest
         carlaInetManager: CarlaInetManager {
             @display("p=122,75");
         }
-        visualizer: <default(firstAvailableOrEmpty("IntegratedCanvasVisualizer"))> like IIntegratedVisualizer if typename != "" {
+        visualizer: <default(firstAvailableOrEmpty("IntegratedVisualizer"))> like IIntegratedVisualizer if typename != "" {
             @display("p=580,125");
         }
         configurator: Ipv4NetworkConfigurator {
@@ -40,8 +42,12 @@ network CarlaInetNetworkTest
         }
         
         
-        host: WirelessHost {
+        car: NodeBase {
             mobility.typename = "CarlaInetMobility";
             @display("p=55.89,39.329998");
         }
+        
+        activeNode[0]: <> like INetworkNode;
+        passiveNode[0]: <> like INetworkNode;
+        
 }
