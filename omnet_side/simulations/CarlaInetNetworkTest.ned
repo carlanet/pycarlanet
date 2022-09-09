@@ -47,7 +47,4 @@ network CarlaInetNetworkTest
             @display("p=55.89,39.329998");
         }
         
-        activeNode[0]: <> like INetworkNode;
-        passiveNode[0]: <> like INetworkNode;
-        
 }

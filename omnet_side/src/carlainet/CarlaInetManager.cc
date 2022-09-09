@@ -40,7 +40,7 @@ void CarlaInetManager::sendToCarla(json jsonMsg){
     socket.send(zmq::buffer(jsonMsg.dump()), zmq::send_flags::none);
 }
 
-template <typename T> void CarlaInetManager::receiveFromCarla(T *v, double timeoutFactor){
+json CarlaInetManager::receiveFromCarla(double timeoutFactor){
     // set actual timeout
     int recv_timeout_ms =  max(4000, int(timeout_ms * timeoutFactor));
     this->socket.setsockopt(ZMQ_RCVTIMEO, recv_timeout_ms);
@@ -52,9 +52,9 @@ template <typename T> void CarlaInetManager::receiveFromCarla(T *v, double timeo
         throw runtime_error("CALRA Timeout");
         //EV_ERROR << "receive error"<<endl;
     }
-    json j = json::parse(reply.to_string());
+    json jsonResp = json::parse(reply.to_string());
 
-    switch (j["simulation_status"].get<int>()){
+    switch (jsonResp["simulation_status"].get<int>()){
     case SIM_STATUS_FINISHED_OK:
     case SIM_STATUS_FINISHED_ACCIDENT:
     case SIM_STATUS_FINISHED_TIME_LIMIT:
@@ -63,11 +63,12 @@ template <typename T> void CarlaInetManager::receiveFromCarla(T *v, double timeo
     case SIM_STATUS_ERROR:
         throw runtime_error("Communication error. Wrong message sequence!");
         break;
-    default:
-        *v = j.get<T>();
-
     }
-    //return j.get<T>();
+    return jsonResp;
+}
+
+template <typename T> T CarlaInetManager::receiveFromCarla(double timeoutFactor){
+    return receiveFromCarla().get<T>();
 }
 
 
@@ -82,9 +83,9 @@ void CarlaInetManager::initialize(int stage)
         simulationTimeStep = par("simulationTimeStep");
 
         networkActiveModuleType = par("networkActiveModuleType").stringValue();
-//        networkActiveModuleName = par("networkActiveModuleName").stringValue();
+        //        networkActiveModuleName = par("networkActiveModuleName").stringValue();
         networkPassiveModuleType = par("networkPassiveModuleType").stringValue();
-//        networkPassiveModuleName = par("networkPassiveModuleName").stringValue();
+        //        networkPassiveModuleName = par("networkPassiveModuleName").stringValue();
 
         //findModulesToTrack();
         connect();
@@ -142,8 +143,7 @@ void CarlaInetManager::initializeCarla(){
     EV << jsonMsg.dump() << endl;
     sendToCarla(jsonMsg);
     // I expect to receive INIT_COMPLETE message
-    carla_api::init_completed response;
-    receiveFromCarla<carla_api::init_completed>(&response, 100.0);
+    carla_api::init_completed response = receiveFromCarla<carla_api::init_completed>(100.0);
     // Carla informs about the intial timestamp, so I schedule the first similation step at that timestamp
     EV << "Initialization completed" << response.initial_timestamp <<  endl;
     updateNodesPosition(response.actors_positions);
@@ -160,8 +160,7 @@ void CarlaInetManager::doSimulationTimeStep(){
     json jsonMsg = msg;
     sendToCarla(jsonMsg);
     // I expect updated_postion message
-    carla_api::updated_postion response;
-    receiveFromCarla<carla_api::updated_postion>(& response);
+    carla_api::updated_postion response = receiveFromCarla<carla_api::updated_postion>();
 
     //Update position of all nodes in response
 
@@ -231,9 +230,6 @@ void CarlaInetManager::createAndInitializeActor(carla_api_base::actor_position n
     cModuleType *actorType = cModuleType::get(newActorModuleType);
     cModule* new_mod = actorType->create(newActor.actor_id.c_str(), root);
     new_mod->finalizeParameters();
-    //        if (displayString.length() > 0) {
-    //            mod->getDisplayString().parse(displayString.c_str());
-    //        }
     new_mod->buildInside();
     new_mod->scheduleStart(simTime());
 
@@ -243,30 +239,15 @@ void CarlaInetManager::createAndInitializeActor(carla_api_base::actor_position n
     Coord velocity = Coord(newActor.velocity[0],newActor.velocity[1],newActor.velocity[2]);
     Quaternion rotation = Quaternion(EulerAngles(rad(newActor.rotation[0]),rad(newActor.rotation[1]),rad(newActor.rotation[2])));
     auto carlaInetMobilityMod = check_and_cast<CarlaInetMobility *>(new_mod->getSubmodule("mobility"));
-
-    //EV_INFO << carlaInetMobilityMod->getModuleType() << endl;
-
     carlaInetMobilityMod->preInitialize(position, velocity, rotation);
-
-    //preInitializeModule(mod, nodeId, position, road_id, speed, heading, signals);
 
     // The INET visualizer listens to model change notifications on the
     // network object by default. We assume this is our parent.
-
     auto* notification = new inet::cPreModuleInitNotification();
     notification->module = new_mod;
     root->emit(POST_MODEL_CHANGE, notification, NULL);
 
-
-
-
-    //emit(traciModulePreInitSignal, mod);
-
     new_mod->callInitialize();
-    //hosts[nodeId] = mod;
-
-
-    //cModule *mod = moduleType->createScheduleInit(newActorModuleName, root);
 
 }
 
@@ -286,7 +267,35 @@ void CarlaInetManager::destroyActor(string actorId){
 ///*
 // * PUBLIC APIs
 // * */
-//
+json CarlaInetManager::sendToAndGetFromCarla(json requestMessage){
+    carla_api::generic_message toCarlaMessage;
+    toCarlaMessage.user_defined = requestMessage;
+    toCarlaMessage.timestamp = simTime().dbl();
+
+    json jsonMsg = toCarlaMessage;
+    sendToCarla(jsonMsg);
+
+    auto jsonResp = receiveFromCarla<carla_api::generic_response>(10.0);
+    return jsonResp.user_defined_response;
+
+}
+
+
+template<typename S> json CarlaInetManager::sendToAndGetFromCarla(S requestMessage){
+    json jsonRequestMessage = requestMessage;
+    return sendToAndGetFromCarla(jsonRequestMessage);
+}
+template<typename T> T CarlaInetManager::sendToAndGetFromCarla(json requestMessage){
+    return sendToAndGetFromCarla(requestMessage).get<T>();
+}
+template<typename S, typename T> T CarlaInetManager::sendToAndGetFromCarla(S requestMessage){
+    json jsonRequestMessage = requestMessage;
+    return sendToAndGetFromCarla(jsonRequestMessage).get<T>();
+}
+
+
+
+
 //string CarlaCommunicationManager::getActorStatus(string actorId){
 //    EV_INFO << "Contact Carla for getting the status id" << endl;
 //    carla_api::vehicle_status_update msg;

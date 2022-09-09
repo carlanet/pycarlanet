@@ -26,14 +26,14 @@ using namespace inet;
 
 
 
-class CarlaInetManager: public cSimpleModule {//, public cISimulationLifecycleListener {
+class CarlaInetManager: public cSimpleModule {
 public:
     CarlaInetManager();
     ~CarlaInetManager();
 
     bool isConnected() const
     {
-        return true; //static_cast<bool>(connection);
+        return true;
     }
 
     simtime_t getCarlaInitialCarlaTimestamp() { return initial_timestamp; }
@@ -42,9 +42,20 @@ public:
     void registerMobilityModule(CarlaInetMobility *mod);
 
     //API used by applications
-    //    string getActorStatus(string actorId);
-    //    string computeInstruction(string actorId, string statusId, string agentId);
-    //    void applyInstruction(string actorId, string instructionId);
+
+    /**
+     * This is a generic API that accepts and return json type
+     */
+    json sendToAndGetFromCarla(json requestMessage);
+
+    /*
+     * Variants of the API using templates
+     * IMPORTANT the type must implement "to_json" and "from_json" as specified
+     * by the "nlohmann/json" library
+     */
+    template<typename S> json sendToAndGetFromCarla(S requestMessage);
+    template<typename T> T sendToAndGetFromCarla(json requestMessage);
+    template<typename S, typename T> T sendToAndGetFromCarla(S requestMessage);
 
 
 protected:
@@ -52,8 +63,6 @@ protected:
     virtual void initialize(int stage) override;
     virtual void handleMessage(cMessage *msg) override;
     virtual void finish() override;
-
-    //virtual json addExtraInitParameters() {}
 
 private:
     void connect();
@@ -63,7 +72,9 @@ private:
     void updateNodesPosition(std::list<carla_api_base::actor_position> actor);
 
     void sendToCarla(json msg);
-    template<typename T> void receiveFromCarla(T *v,  double timeoutFactor = 1);
+
+    json receiveFromCarla(double timeoutFactor = 1);
+    template<typename T> T receiveFromCarla(double timeoutFactor = 1);
 
 
     bool connection;
@@ -84,9 +95,7 @@ private:
     void createAndInitializeActor(carla_api_base::actor_position newActor);
     void destroyActor(string actorId);
     const char* networkActiveModuleType;
-//    const char* networkActiveModuleName;
     const char* networkPassiveModuleType;
-//    const char* networkPassiveModuleName;
 };
 
 #endif

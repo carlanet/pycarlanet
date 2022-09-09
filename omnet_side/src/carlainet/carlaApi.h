@@ -16,9 +16,6 @@ namespace carla_api_base{
         std::string actor_id;
         std::string actor_type;
         json actor_configuration;
-        //json agent_configuration;
-        //std::string route;
-        //std::list<init_agent> agents;
     };
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(init_actor, actor_id, actor_type, actor_configuration)
 
@@ -32,10 +29,6 @@ namespace carla_api_base{
     };
     NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(actor_position, actor_id, position, velocity, rotation, is_net_active)
 
-//    "carla_configuration": {
-//            "seed": 11120,
-//            "carla_timestep": 0.01
-//        },
 
     struct carla_configuration {
         int seed;
@@ -104,9 +97,9 @@ namespace carla_api{
 
     struct generic_response {
         std::string message_type = "GENERIC_RESPONSE";
-        json user_defined;
+        json user_defined_response;
         int simulation_status;
     };
-    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(generic_response, message_type, user_defined ,simulation_status)
+    NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(generic_response, message_type, user_defined_response ,simulation_status)
 
 }
