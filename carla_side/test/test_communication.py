@@ -8,13 +8,24 @@ import pytest
 import zmq
 
 from CarlaInetManager import CarlaInetManager
-from OMNeTWorldListener import OMNeTWorldListener
+from OMNeTWorldListener import OMNeTWorldListener, SimulatorStatus
 
 
 def test_creation_of_server():
     p = _start_server(5555, None)
     assert p.is_alive()
     _end_server(p)
+
+
+def _create_init_listener():
+    omnet_worl_listener = MagicMock()
+    carla_actor = MagicMock()
+    carla_actor.get_transform.return_value = carla.Transform(carla.Location(1, 2, 3), carla.Rotation(1, 2, 3))
+    carla_actor.get_velocity.return_value = carla.Vector3D(1, 2, 3)
+    carla_actor.alive.return_value = True
+    omnet_worl_listener.on_finished_creation_omnet_world.return_value = 10, SimulatorStatus.RUNNING
+    omnet_worl_listener.on_static_actor_created.return_value = carla_actor
+    return omnet_worl_listener
 
 
 def test_init_with_my_client():
@@ -26,14 +37,15 @@ def test_init_with_my_client():
     carla_actor.get_transform.return_value = carla.Transform(carla.Location(1, 2, 3), carla.Rotation(1, 2, 3))
     carla_actor.get_velocity.return_value = carla.Vector3D(1, 2, 3)
     carla_actor.alive.return_value = True
-    omnet_worl_listener.on_finished_creation_omnet_world.return_value = carla_timestamp
+    omnet_worl_listener.on_finished_creation_omnet_world.return_value = carla_timestamp, SimulatorStatus.RUNNING
     omnet_worl_listener.on_static_actor_created.return_value = carla_actor
     p = _start_server(5555, omnet_worl_listener)
     init_request = _read_request('init')
     _send_message(s, init_request)
-    msg = _receive_message(s)
-    assert msg['carla_timestamp'] == carla_timestamp
-    assert msg['positions'][0]['position'][0] == 1
+    msg = _receive_message(s)  # omnet_worl_listener.on_finished_creation_omnet_world.assert_called_once()
+    assert msg['initial_timestamp'] == carla_timestamp
+    assert msg['actors_positions'][0]['position'][0] == 1
+    # assert omnet_worl_listener.on_finished_creation_omnet_world.call_count == 1
     _end_server(p)
 
 
@@ -49,6 +61,24 @@ def test_init_with_omnet():
     omnet_worl_listener.on_static_actor_created.return_value = carla_actor
     p = _start_server(5555, omnet_worl_listener)
     p.join()
+    _end_server(p)
+
+
+def test_simulation_step_with_my_client():
+    s = _connect('localhost', 5555)
+
+    omnet_worl_listener = _create_init_listener()
+    omnet_worl_listener.on_carla_simulation_step.return_value = 5
+    omnet_worl_listener.on_carla_simulation_step.return_value = SimulatorStatus.RUNNING
+    p = _start_server(5555, omnet_worl_listener)
+    init_request = _read_request('init')
+    _send_message(s, init_request)
+    _ = _receive_message(s)  # omnet_worl_listener.on_finished_creation_omnet_world.assert_called_once()
+
+    simulation_step_request = _read_request('simulation_step')
+    _send_message(s, simulation_step_request)
+    msg = _receive_message(s)
+    # omnet_worl_listener.on_carla_simulation_step.assert_called_once()
     _end_server(p)
 
 
@@ -87,4 +117,4 @@ def _connect(host, port):
 
 
 if __name__ == '__main__':
-    test_init_with_omnet()
+    test_simulation_step_with_my_client()

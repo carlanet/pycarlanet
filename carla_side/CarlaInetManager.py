@@ -4,7 +4,7 @@ import json
 import carla
 import zmq
 
-import OMNeTWorldListener
+from OMNeTWorldListener import OMNeTWorldListener, SimulatorStatus
 from CarlaInetActor import CarlaInetActor
 from utils.decorators import preconditions
 
@@ -14,7 +14,7 @@ class UnknownMessageCarlaInetError(RuntimeError):
         self.unknown_msg = unknown_msg
 
     def __repr__(self) -> str:
-        return "I don't know how to handle the following msg: " + self.unknown_msg
+        return "I don't know how to handle the following msg: " + self.unknown_msg['message_type']
 
 
 class CarlaInetManager:
@@ -84,7 +84,7 @@ class MessageHandlerState(abc.ABC):
             meth = getattr(self, message_type)
             return meth(message)
         raise RuntimeError(f"""I'm in the following state: {self.__class__.__name__} and 
-                                    I don't know how to handle {message.__class__.__name__} message""")
+                                    I don't know how to handle {message['message_type']} message""")
 
     @preconditions('_manager')
     def _generate_carla_nodes_positions(self):
@@ -110,7 +110,7 @@ class InitMessageHandlerState(MessageHandlerState):
     def INIT(self, message):
         res = dict()
         res['message_type'] = 'INIT_COMPLETED'
-        carla_timestamp = self.omnet_world_listener.on_finished_creation_omnet_world(
+        carla_timestamp, sim_status = self.omnet_world_listener.on_finished_creation_omnet_world(
             message['run_id'],
             *message['carla_configuration'].values(),
             message['user_defined'])
@@ -122,14 +122,36 @@ class InitMessageHandlerState(MessageHandlerState):
                 static_inet_actor['actor_configuration']
             )
         res['initial_timestamp'] = carla_timestamp
-        res['simulation_status'] = 0 # TODO change
+        res['simulation_status'] = sim_status.value
         res['actors_positions'] = self._generate_carla_nodes_positions()
-        self._manager.set_message_handler_state(RunningMessageHandlerState)
+        if sim_status == SimulatorStatus.RUNNING:
+            self._manager.set_message_handler_state(RunningMessageHandlerState)
         return res
 
 
 class RunningMessageHandlerState(MessageHandlerState):
-    ...
+    def SIMULATION_STEP(self, message):
+        res = dict()
+        res['message_type'] = 'UPDATED_POSITIONS'
+        sim_status = self.omnet_world_listener.on_carla_simulation_step(message['timestamp'])
+        res['simulation_status'] = sim_status.value
+        res['actors_positions'] = self._generate_carla_nodes_positions()
+        if sim_status != SimulatorStatus.RUNNING:
+            self._manager.set_message_handler_state(FinishedMessageHandlerState)
+        return res
+
+    def GENERIC_MESSAGE(self, message):
+        res = dict()
+        res['message_type'] = 'GENERIC_RESPONSE'
+        sim_status, user_defined_response = self.omnet_world_listener.on_generic_message(message['timestamp'], message[
+            'user_defined_message'])
+
+        res['simulation_status'] = sim_status.value
+        res['user_defined_response'] = user_defined_response
+
+        if sim_status != SimulatorStatus.RUNNING:
+            self._manager.set_message_handler_state(FinishedMessageHandlerState)
+        return res
 
 
 class FinishedMessageHandlerState(MessageHandlerState):
