@@ -28,6 +28,7 @@ class CarlaInetManager:
         context = zmq.Context()
         self.socket = context.socket(zmq.REP)
         self.socket.setsockopt(zmq.CONFLATE, 1)
+        self.socket.setsockopt(zmq.LINGER, 100)
         self.socket.bind(f"tcp://*:{self._listening_port}")
         print("server running")
 
@@ -45,6 +46,8 @@ class CarlaInetManager:
             msg = self._receive_data_from_omnet()
             answer = self._message_handler.handle_message(msg)
             self._send_data_to_omnet(answer)
+
+        self.socket.close()
 
     def _send_data_to_omnet(self, answer):
         print(answer)
@@ -97,7 +100,7 @@ class MessageHandlerState(abc.ABC):
             position['position'] = [transform.location.x, transform.location.y, transform.location.z]
             position['rotation'] = [transform.rotation.pitch, transform.rotation.yaw, transform.rotation.roll]
             position['velocity'] = [velocity.x, velocity.y, velocity.z]
-            position['is_net_active'] = actor.alive()
+            position['is_net_active'] = actor.alive
             nodes_positions.append(position)
         return nodes_positions
 
@@ -111,9 +114,11 @@ class InitMessageHandlerState(MessageHandlerState):
         res = dict()
         res['message_type'] = 'INIT_COMPLETED'
         carla_timestamp, sim_status = self.omnet_world_listener.on_finished_creation_omnet_world(
-            message['run_id'],
-            *message['carla_configuration'].values(),
-            message['user_defined'])
+            run_id=message['run_id'],
+            seed = message['carla_configuration']['seed'],
+            carla_timestep = message['carla_configuration']['carla_timestep'],
+            sim_time_limit = message['carla_configuration']['sim_time_limit'],
+            custom_params=message['user_defined'])
         for static_inet_actor in message['moving_actors']:
             actor_id = static_inet_actor['actor_id']
             self._carla_inet_actors[actor_id] = self.omnet_world_listener.on_static_actor_created(
