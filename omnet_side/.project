@@ -3,7 +3,7 @@
 	<name>omnet_side</name>
 	<comment></comment>
 	<projects>
-		<project>inet4.4</project>
+		<project>inet</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

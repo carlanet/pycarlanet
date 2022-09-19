@@ -13,7 +13,6 @@
 #include <list>
 #include <queue>
 #include <fstream>
-#include <nlohmann/json.hpp>
 
 #include "omnetpp.h"
 #include "inet/common/INETDefs.h"
