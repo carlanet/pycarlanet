@@ -15,7 +15,7 @@ class MyWorld(OMNeTWorldListener):
         self.carla_inet_actors = dict()
         self.general_status = dict()
 
-    def on_finished_creation_omnet_world(self, run_id, seed, carla_timestep, custom_params) -> (float, SimulatorStatus):
+    def on_finished_creation_omnet_world(self, run_id, seed, carla_timestep, sim_time_limit, custom_params) -> (float, SimulatorStatus):
         random.seed(seed)
 
         host = ...

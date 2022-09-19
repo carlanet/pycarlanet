@@ -6,6 +6,7 @@ import zmq
 
 from OMNeTWorldListener import OMNeTWorldListener, SimulatorStatus
 from CarlaInetActor import CarlaInetActor
+from sample.client_simulator import limit_sim_time
 from utils.decorators import preconditions
 
 
@@ -111,9 +112,11 @@ class InitMessageHandlerState(MessageHandlerState):
         res = dict()
         res['message_type'] = 'INIT_COMPLETED'
         carla_timestamp, sim_status = self.omnet_world_listener.on_finished_creation_omnet_world(
-            message['run_id'],
-            *message['carla_configuration'].values(),
-            message['user_defined'])
+            run_id=message['run_id'],
+            seed = message['carla_configuration']['seed'],
+            carla_timestep = message['carla_configuration']['carla_timestep'],
+            sim_time_limit = message['carla_configuration']['sim_time_limit'],
+            custom_params=message['user_defined'])
         for static_inet_actor in message['moving_actors']:
             actor_id = static_inet_actor['actor_id']
             self._carla_inet_actors[actor_id] = self.omnet_world_listener.on_static_actor_created(
