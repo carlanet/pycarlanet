@@ -13,7 +13,7 @@ class CarlaInetActor(abc.ABC):
 
     def __init__(self, carla_actor: carla.Actor, alive: bool):
         self._carla_actor = carla_actor
-        self.alive = alive
+        self._alive = alive
 
     @preconditions('_carla_actor')
     def __getattr__(self, *args):
@@ -21,3 +21,7 @@ class CarlaInetActor(abc.ABC):
 
     def apply_command(self, command):
         carla.command.ApplyVehicleControl(self.id, command)
+
+    @property
+    def alive(self):
+        return self._alive
