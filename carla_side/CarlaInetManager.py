@@ -6,7 +6,6 @@ import zmq
 
 from OMNeTWorldListener import OMNeTWorldListener, SimulatorStatus
 from CarlaInetActor import CarlaInetActor
-from sample.client_simulator import limit_sim_time
 from utils.decorators import preconditions
 
 
