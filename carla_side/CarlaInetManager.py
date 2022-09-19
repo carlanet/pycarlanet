@@ -29,6 +29,7 @@ class CarlaInetManager:
         context = zmq.Context()
         self.socket = context.socket(zmq.REP)
         self.socket.setsockopt(zmq.CONFLATE, 1)
+        self.socket.setsockopt(zmq.LINGER, 100)
         self.socket.bind(f"tcp://*:{self._listening_port}")
         print("server running")
 
@@ -46,6 +47,8 @@ class CarlaInetManager:
             msg = self._receive_data_from_omnet()
             answer = self._message_handler.handle_message(msg)
             self._send_data_to_omnet(answer)
+
+        self.socket.close()
 
     def _send_data_to_omnet(self, answer):
         print(answer)
