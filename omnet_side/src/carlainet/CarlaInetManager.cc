@@ -68,7 +68,7 @@ json CarlaInetManager::receiveFromCarla(double timeoutFactor){
 }
 
 template <typename T> T CarlaInetManager::receiveFromCarla(double timeoutFactor){
-    return receiveFromCarla().get<T>();
+    return receiveFromCarla(timeoutFactor).get<T>();
 }
 
 

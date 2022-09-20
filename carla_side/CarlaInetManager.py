@@ -100,7 +100,7 @@ class MessageHandlerState(abc.ABC):
             position['position'] = [transform.location.x, transform.location.y, transform.location.z]
             position['rotation'] = [transform.rotation.pitch, transform.rotation.yaw, transform.rotation.roll]
             position['velocity'] = [velocity.x, velocity.y, velocity.z]
-            position['is_net_active'] = actor.alive()
+            position['is_net_active'] = actor.alive
             nodes_positions.append(position)
         return nodes_positions
 
