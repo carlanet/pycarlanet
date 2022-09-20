@@ -121,7 +121,7 @@ class InitMessageHandlerState(MessageHandlerState):
             custom_params=message['user_defined'])
         for static_inet_actor in message['moving_actors']:
             actor_id = static_inet_actor['actor_id']
-            self._carla_inet_actors[actor_id] = self.omnet_world_listener.on_static_actor_created(
+            carla_timestamp, self._carla_inet_actors[actor_id] = self.omnet_world_listener.on_static_actor_created(
                 actor_id,
                 static_inet_actor['actor_type'],
                 static_inet_actor['actor_configuration']

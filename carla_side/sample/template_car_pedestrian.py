@@ -15,7 +15,8 @@ class MyWorld(OMNeTWorldListener):
         self.carla_inet_actors = dict()
         self.general_status = dict()
 
-    def on_finished_creation_omnet_world(self, run_id, seed, carla_timestep, sim_time_limit, custom_params) -> (float, SimulatorStatus):
+    def on_finished_creation_omnet_world(self, run_id, seed, carla_timestep, sim_time_limit, custom_params) -> (
+    float, SimulatorStatus):
         random.seed(seed)
 
         host = ...
@@ -43,7 +44,9 @@ class MyWorld(OMNeTWorldListener):
         self.client, self.sim_world = client, sim_world
         self.carla_map = self.sim_world.get_map()
 
-    def on_static_actor_created(self, actor_id: str, actor_type: str, actor_config: dict) -> CarlaInetActor:
+        return self.sim_world.get_snapshot().timestamp.elapsed_seconds, SimulatorStatus.RUNNING
+
+    def on_static_actor_created(self, actor_id: str, actor_type: str, actor_config: dict) -> (float, CarlaInetActor):
         if actor_type == 'car':  # and actor_id == 'car_1':
             blueprint: ActorBlueprint = random.choice(
                 self.sim_world.get_blueprint_library().filter("vehicle.tesla.model3"))
@@ -63,7 +66,8 @@ class MyWorld(OMNeTWorldListener):
 
         carla_inet_actor = CarlaInetActor(carla_actor, True)
         self.carla_inet_actors[actor_id] = carla_inet_actor
-        return carla_inet_actor
+        self.sim_world.tick()
+        return self.sim_world.get_snapshot().timestamp.elapsed_seconds, carla_inet_actor
 
     def on_carla_simulation_step(self, timestamp) -> SimulatorStatus:
         self.sim_world.tick()
