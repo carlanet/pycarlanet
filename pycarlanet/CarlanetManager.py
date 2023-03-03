@@ -4,12 +4,12 @@ import json
 import carla
 import zmq
 
-from OMNeTWorldListener import OMNeTWorldListener, SimulatorStatus
-from CarlaInetActor import CarlaInetActor
-from utils.decorators import preconditions
+from pycarlanet import OMNeTWorldListener, SimulatorStatus
+from pycarlanet import CarlanetActor
+from pycarlanet.utils import preconditions
 
 
-class UnknownMessageCarlaInetError(RuntimeError):
+class UnknownMessageCarlanetError(RuntimeError):
     def __init__(self, unknown_msg):
         self.unknown_msg = unknown_msg
 
@@ -17,12 +17,12 @@ class UnknownMessageCarlaInetError(RuntimeError):
         return "I don't know how to handle the following msg: " + self.unknown_msg['message_type']
 
 
-class CarlaInetManager:
+class CarlanetManager:
     def __init__(self, listening_port, omnet_world_listener: OMNeTWorldListener):
         self._listening_port = listening_port
         self._omnet_world_listener = omnet_world_listener
         self._message_handler: MessageHandlerState = None
-        self._carla_inet_actors = dict()
+        self._carlanet_actors = dict()
 
     def _start_server(self):
         context = zmq.Context()
@@ -57,14 +57,14 @@ class CarlaInetManager:
     def set_message_handler_state(self, msg_handler_cls):
         self._message_handler = msg_handler_cls(self)
 
-    def add_dynamic_actor(self, actor_id: str, carla_inet_actor: CarlaInetActor):
+    def add_dynamic_actor(self, actor_id: str, carlanet_actor: CarlanetActor):
         """
         Used to create dynamically a new actor, both active and passive, and send its position to OMNeT
         :param actor_id:
-        :param carla_inet_actor:
+        :param carlanet_actor:
         :return:
         """
-        self._carla_inet_actors[actor_id] = carla_inet_actor
+        self._carlanet_actors[actor_id] = carlanet_actor
 
     def remove_actor(self, actor_id: str):
         """
@@ -72,14 +72,14 @@ class CarlaInetManager:
         :param actor_id:
         :return:
         """
-        del self._carla_inet_actors[actor_id]
+        del self._carlanet_actors[actor_id]
 
 
 class MessageHandlerState(abc.ABC):
-    def __init__(self, carla_inet_manager: CarlaInetManager):
-        self._manager = carla_inet_manager
+    def __init__(self, carlanet_manager: CarlanetManager):
+        self._manager = carlanet_manager
         self.omnet_world_listener: OMNeTWorldListener = self._manager._omnet_world_listener
-        self._carla_inet_actors = self._manager._carla_inet_actors
+        self._carlanet_actors = self._manager._carlanet_actors
 
     def handle_message(self, message):
         message_type = message['message_type']
@@ -92,7 +92,7 @@ class MessageHandlerState(abc.ABC):
     @preconditions('_manager')
     def _generate_carla_nodes_positions(self):
         nodes_positions = []
-        for actor_id, actor in self._carla_inet_actors.items():
+        for actor_id, actor in self._carlanet_actors.items():
             transform: carla.Transform = actor.get_transform()
             velocity: carla.Vector3D = actor.get_velocity()
             position = dict()
@@ -107,8 +107,8 @@ class MessageHandlerState(abc.ABC):
 
 class InitMessageHandlerState(MessageHandlerState):
 
-    def __init__(self, carla_inet_manager: CarlaInetManager):
-        super().__init__(carla_inet_manager)
+    def __init__(self, carlanet_manager: CarlanetManager):
+        super().__init__(carlanet_manager)
 
     def INIT(self, message):
         res = dict()
@@ -119,12 +119,12 @@ class InitMessageHandlerState(MessageHandlerState):
             carla_timestep = message['carla_configuration']['carla_timestep'],
             sim_time_limit = message['carla_configuration']['sim_time_limit'],
             custom_params=message['user_defined'])
-        for static_inet_actor in message['moving_actors']:
-            actor_id = static_inet_actor['actor_id']
-            carla_timestamp, self._carla_inet_actors[actor_id] = self.omnet_world_listener.on_static_actor_created(
+        for static_carlanet_actor in message['moving_actors']:
+            actor_id = static_carlanet_actor['actor_id']
+            carla_timestamp, self._carlanet_actors[actor_id] = self.omnet_world_listener.on_static_actor_created(
                 actor_id,
-                static_inet_actor['actor_type'],
-                static_inet_actor['actor_configuration']
+                static_carlanet_actor['actor_type'],
+                static_carlanet_actor['actor_configuration']
             )
         res['initial_timestamp'] = carla_timestamp
         res['simulation_status'] = sim_status.value
@@ -162,6 +162,3 @@ class RunningMessageHandlerState(MessageHandlerState):
 class FinishedMessageHandlerState(MessageHandlerState):
     ...
 
-
-if __name__ == '__main__':
-    CarlaInetManager(5555, None)

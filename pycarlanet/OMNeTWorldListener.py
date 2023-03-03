@@ -1,7 +1,7 @@
 import abc
 import enum
 
-from CarlaInetActor import CarlaInetActor
+from pycarlanet import CarlanetActor
 
 """
 Listener for OMNeT world, note, every parameters gave as in input is a String, so eventually you need to use cast
@@ -16,10 +16,10 @@ class SimulatorStatus(enum.Enum):
 
 class OMNeTWorldListener(abc.ABC):
 
-    def on_static_actor_created(self, actor_id: str, actor_type: str, actor_config) -> (float, CarlaInetActor):
+    def on_static_actor_created(self, actor_id: str, actor_type: str, actor_config) -> (float, CarlanetActor):
         """
         Callback called at the beginning of the simulation, OMNeT says which actors it has and communicate
-        with carla to create these actors in the world
+        with carla to create those actors in the world
         :param actor_id:
         :param actor_type:
         :param actor_config:

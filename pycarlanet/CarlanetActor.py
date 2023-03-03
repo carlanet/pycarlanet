@@ -2,14 +2,14 @@ import abc
 
 import carla
 
-from utils.decorators import preconditions
+from pycarlanet.utils import preconditions
 
 
 # Pattern decorator for carla.Actor
 # NOTE: you can call each method of carla.Actor on this class, but if you want to pass an object of type
-# CarlaInetActor to a methods defined in carla you have to pass the attribute carla_actor
+# CarlanetActor to a methods defined in carla you have to pass the attribute carla_actor
 # because carla can't see this class
-class CarlaInetActor(abc.ABC):
+class CarlanetActor(abc.ABC):
 
     def __init__(self, carla_actor: carla.Actor, alive: bool):
         self._carla_actor = carla_actor

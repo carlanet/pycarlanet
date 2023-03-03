@@ -13,7 +13,8 @@
     ],
     "carla_configuration": {
         "seed": 11120,
-        "carla_timestep": 0.01        
+        "carla_timestep": 0.01,
+        "sim_time_limit": 150
     },
     "user_defined": {
       "carla_world_configuration": "world_4"

@@ -2,17 +2,17 @@ import random
 import carla
 from carla import libcarla, ActorBlueprint
 
-from CarlaInetActor import CarlaInetActor
-from CarlaInetManager import CarlaInetManager
-from OMNeTWorldListener import OMNeTWorldListener, SimulatorStatus
+from pycarlanet import CarlanetActor
+from pycarlanet import CarlanetManager
+from pycarlanet import OMNeTWorldListener, SimulatorStatus
 
 
 class MyWorld(OMNeTWorldListener):
     def __init__(self):
-        self.carla_inet_manager = CarlaInetManager(5555, self)
+        self.carlanet_manager = CarlanetManager(5555, self)
 
         self.client = self.sim_world = self.carla_map = None
-        self.carla_inet_actors = dict()
+        self.carlanet_actors = dict()
         self.general_status = dict()
 
     def on_finished_creation_omnet_world(self, run_id, seed, carla_timestep, sim_time_limit, custom_params) -> (
@@ -46,7 +46,7 @@ class MyWorld(OMNeTWorldListener):
 
         return self.sim_world.get_snapshot().timestamp.elapsed_seconds, SimulatorStatus.RUNNING
 
-    def on_static_actor_created(self, actor_id: str, actor_type: str, actor_config: dict) -> (float, CarlaInetActor):
+    def on_static_actor_created(self, actor_id: str, actor_type: str, actor_config: dict) -> (float, CarlanetActor):
         if actor_type == 'car':  # and actor_id == 'car_1':
             blueprint: ActorBlueprint = random.choice(
                 self.sim_world.get_blueprint_library().filter("vehicle.tesla.model3"))
@@ -64,10 +64,10 @@ class MyWorld(OMNeTWorldListener):
         else:
             raise RuntimeError(f'I don\'t know this type {actor_type}')
 
-        carla_inet_actor = CarlaInetActor(carla_actor, True)
-        self.carla_inet_actors[actor_id] = carla_inet_actor
+        carlanet_actor = CarlanetActor(carla_actor, True)
+        self.carlanet_actors[actor_id] = carlanet_actor
         self.sim_world.tick()
-        return self.sim_world.get_snapshot().timestamp.elapsed_seconds, carla_inet_actor
+        return self.sim_world.get_snapshot().timestamp.elapsed_seconds, carlanet_actor
 
     def on_carla_simulation_step(self, timestamp) -> SimulatorStatus:
         self.sim_world.tick()
@@ -87,7 +87,7 @@ class MyWorld(OMNeTWorldListener):
             actor_id = user_defined_message['actor_id']
 
             status = self.general_status[command_id]
-            action_to_call = getattr(self.carla_inet_actors[user_defined_message[actor_id]], specific_action)(*status)
+            action_to_call = getattr(self.carlanet_actors[user_defined_message[actor_id]], specific_action)(*status)
             action_to_call()
             msg_to_send['agent_id'] = ...
             return SimulatorStatus.RUNNING, msg_to_send
