@@ -4,7 +4,7 @@ import sys
 setup(
     name="pycarlanet",
     packages=find_packages(include=['pycarlanet', 'pycarlanet.utils']),
-    version="0.8.1-alpha",
+    version="0.8.2-alpha",
     description='Carla and Omnet++ co-simulation library',
     author="Valerio Cislaghi, Christian Quadri",
     license='MIT',
