@@ -1,11 +1,12 @@
 from setuptools import find_packages, setup
 import sys
+from pathlib import Path
 
 setup(
     name="pycarlanet",
     packages=find_packages(include=['pycarlanet', 'pycarlanet.utils']),
-    version="0.8.5-alpha",
-    long_description="""Carla and Omnet++ co-simulation library""",
+    version="0.8.6-alpha",
+    long_description=Path("README.md").read_text(encoding="utf-8"),
     long_description_content_type='text/markdown',
     author="Valerio Cislaghi, Christian Quadri",
     license='MIT',
