@@ -42,12 +42,17 @@ class CarlanetManager:
     def start_simulation(self):
         self._start_server()
         self.set_message_handler_state(InitMessageHandlerState)
-        while not isinstance(self._message_handler, FinishedMessageHandlerState):
-            msg = self._receive_data_from_omnet()
-            answer = self._message_handler.handle_message(msg)
-            self._send_data_to_omnet(answer)
+        try:
+            while not isinstance(self._message_handler, FinishedMessageHandlerState):
+                msg = self._receive_data_from_omnet()
+                answer = self._message_handler.handle_message(msg)
+                self._send_data_to_omnet(answer)
+            self._omnet_world_listener.on_simulation_finished()
 
-        self.socket.close()
+        except Exception as e:
+            self._omnet_world_listener.on_simulation_error(e)
+        finally:
+            self.socket.close()
 
     def _send_data_to_omnet(self, answer):
         print(answer)
@@ -115,9 +120,9 @@ class InitMessageHandlerState(MessageHandlerState):
         res['message_type'] = 'INIT_COMPLETED'
         carla_timestamp, sim_status = self.omnet_world_listener.on_finished_creation_omnet_world(
             run_id=message['run_id'],
-            seed = message['carla_configuration']['seed'],
-            carla_timestep = message['carla_configuration']['carla_timestep'],
-            sim_time_limit = message['carla_configuration']['sim_time_limit'],
+            seed=message['carla_configuration']['seed'],
+            carla_timestep=message['carla_configuration']['carla_timestep'],
+            sim_time_limit=message['carla_configuration']['sim_time_limit'],
             custom_params=message['user_defined'])
         for static_carlanet_actor in message['moving_actors']:
             actor_id = static_carlanet_actor['actor_id']
@@ -161,4 +166,3 @@ class RunningMessageHandlerState(MessageHandlerState):
 
 class FinishedMessageHandlerState(MessageHandlerState):
     ...
-

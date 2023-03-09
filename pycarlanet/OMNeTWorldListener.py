@@ -28,7 +28,8 @@ class OMNeTWorldListener(abc.ABC):
         ...
         ##return Actor
 
-    def on_finished_creation_omnet_world(self, run_id, seed, carla_timestep, sim_time_limit, custom_params) -> (float, SimulatorStatus):
+    def on_finished_creation_omnet_world(self, run_id, seed, carla_timestep, sim_time_limit, custom_params) -> (
+            float, SimulatorStatus):
         """
         :param run_id:
         :param seed:
@@ -52,5 +53,20 @@ class OMNeTWorldListener(abc.ABC):
         :param timestamp:
         :param user_defined_message:
         :return: (current simulator status, dict contained custom parameters not None)
+        """
+        ...
+
+    def on_simulation_finished(self):
+        """
+        Callback called upon successful completion of the simulation
+        :return:
+        """
+        ...
+
+    def on_simulation_error(self, exception):
+        """
+
+        :param exception:
+        :return:
         """
         ...
