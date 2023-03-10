@@ -1,6 +1,7 @@
 import json
 import multiprocessing
 import os
+import shutil
 from time import sleep
 from unittest.mock import MagicMock
 import pytest
@@ -85,6 +86,7 @@ def test_save_configuration():
     with open(os.path.join(save_config_path, 'init.json'), 'r') as f:        # Load the JSON data into a Python object
         data = json.load(f)
         assert data == init_request
+    shutil.rmtree(save_config_path)
     # assert omnet_worl_listener.on_finished_creation_omnet_world.call_count == 1
     _end_server(p)
 

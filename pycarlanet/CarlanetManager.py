@@ -127,10 +127,8 @@ class InitMessageHandlerState(MessageHandlerState):
         res['message_type'] = 'INIT_COMPLETED'
         carla_timestamp, sim_status = self.omnet_world_listener.on_finished_creation_omnet_world(
             run_id=message['run_id'],
-            seed=message['carla_configuration']['seed'],
-            carla_timestep=message['carla_configuration']['carla_timestep'],
-            sim_time_limit=message['carla_configuration']['sim_time_limit'],
-            custom_params=message['user_defined'])
+            carla_configuration=message['carla_configuration'],
+            user_defined=message['user_defined'])
         for static_carlanet_actor in message['moving_actors']:
             actor_id = static_carlanet_actor['actor_id']
             carla_timestamp, self._carlanet_actors[actor_id] = self.omnet_world_listener.on_static_actor_created(
