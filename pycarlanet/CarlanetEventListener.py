@@ -16,9 +16,18 @@ class SimulatorStatus(enum.Enum):
 
 class CarlanetEventListener(abc.ABC):
 
-    def on_static_actor_created(self, actor_id: str, actor_type: str, actor_config) -> (float, CarlanetActor):
+    def omnet_init_completed(self, run_id, carla_configuration, user_defined) -> (float, SimulatorStatus):
         """
-        Callback called at the beginning of the simulation, OMNeT says which actors it has and communicate
+        :param run_id: id corresponding to the one in OMNeT++
+        :param carla_configuration:
+        :param user_defined:
+        :return: current carla world timestamp (see Snapshot class of CarlaAPI), current simulator status
+        """
+        ...
+
+    def actor_created(self, actor_id: str, actor_type: str, actor_config) -> (float, CarlanetActor):
+        """
+        Called at the beginning of the simulation, OMNeT says which actors it has and communicate
         with carla to create those actors in the world
         :param actor_id:
         :param actor_type:
@@ -28,25 +37,19 @@ class CarlanetEventListener(abc.ABC):
         ...
         ##return Actor
 
-    def on_finished_creation_omnet_world(self, run_id, carla_configuration, user_defined) -> (
-            float, SimulatorStatus):
-        """
-        :param run_id: id corresponding to the one in OMNeT++
-        :param carla_configuration:
-        :param user_defined:
-        :return: current carla world timestamp (see Snapshot class of CarlaAPI), current simulator status
-        """
+    def carla_init_completed(self):
+        """Called when the initialization of CARLA World is finished"""
         ...
 
-    def on_carla_simulation_step(self, timestamp) -> SimulatorStatus:
+    def carla_simulation_step(self, timestamp) -> SimulatorStatus:
         """
-        Method called every times OMNeT call simulation_step of Carla
+        Method called every time OMNeT call simulation_step of Carla
         :param timestamp
         :return: current simulator status
         """
         ...
 
-    def on_generic_message(self, timestamp, user_defined_message) -> (SimulatorStatus, dict):
+    def generic_message(self, timestamp, user_defined_message) -> (SimulatorStatus, dict):
         """
         :param timestamp:
         :param user_defined_message:
@@ -54,14 +57,14 @@ class CarlanetEventListener(abc.ABC):
         """
         ...
 
-    def on_simulation_finished(self):
+    def simulation_finished(self):
         """
         Callback called upon successful completion of the simulation
         :return:
         """
         ...
 
-    def on_simulation_error(self, exception):
+    def simulation_error(self, exception):
         """
 
         :param exception:

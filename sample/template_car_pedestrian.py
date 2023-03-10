@@ -15,7 +15,7 @@ class MyWorld(CarlanetEventListener):
         self.carlanet_actors = dict()
         self.general_status = dict()
 
-    def on_finished_creation_omnet_world(self, run_id, seed, carla_timestep, sim_time_limit, custom_params) -> (
+    def on_completition_omnet_world(self, run_id, seed, carla_timestep, sim_time_limit, custom_params) -> (
     float, SimulatorStatus):
         random.seed(seed)
 
@@ -69,7 +69,7 @@ class MyWorld(CarlanetEventListener):
         self.sim_world.tick()
         return self.sim_world.get_snapshot().timestamp.elapsed_seconds, carlanet_actor
 
-    def on_carla_simulation_step(self, timestamp) -> SimulatorStatus:
+    def carla_simulation_step(self, timestamp) -> SimulatorStatus:
         self.sim_world.tick()
         # Do all the things, save actors data
         if timestamp > 100:  # ts_limit
@@ -77,7 +77,7 @@ class MyWorld(CarlanetEventListener):
         else:
             return SimulatorStatus.RUNNING
 
-    def on_generic_message(self, timestamp, user_defined_message) -> (SimulatorStatus, dict):
+    def generic_message(self, timestamp, user_defined_message) -> (SimulatorStatus, dict):
         # Handle the action of the actors in the world (apply_commands, calc_instruction)
         # es: apply_commands with id command_12 to actor with id active_actor_14
         if user_defined_message['msg_type'] == 'car_action':

@@ -15,7 +15,7 @@ from pycarlanet import SimulatorStatus
 
 
 def test_creation_of_server():
-    port = random.randint(5000, 6000)
+    port = random.randint(5000, 8000)
 
     p = _start_server(port, None)
     assert p.is_alive()
@@ -35,9 +35,10 @@ def _create_init_listener():
 
 
 def test_init_with_my_client():
-    port = random.randint(5000, 6000)
+    port = random.randint(5000, 8000)
 
     omnet_worl_listener = MagicMock()
+    omnet_worl_listener.carla_init_completed = MagicMock()
     carla_timestamp = random.randint(1, 100) / 100
 
     carla_actor = MagicMock()
@@ -45,8 +46,8 @@ def test_init_with_my_client():
     carla_actor.get_velocity.return_value = carla.Vector3D(1, 2, 3)
     # carla_actor.alive.return_value = True
     carla_actor.alive = True
-    omnet_worl_listener.on_finished_creation_omnet_world.return_value = carla_timestamp, SimulatorStatus.RUNNING
-    omnet_worl_listener.on_static_actor_created.return_value = carla_timestamp, carla_actor
+    omnet_worl_listener.omnet_init_completed.return_value = carla_timestamp, SimulatorStatus.RUNNING
+    omnet_worl_listener.actor_created.return_value = carla_timestamp, carla_actor
 
     p = _start_server(port, omnet_worl_listener)
     init_request = _read_request('init')
@@ -56,12 +57,13 @@ def test_init_with_my_client():
     msg = _receive_message(s)  # omnet_worl_listener.on_finished_creation_omnet_world.assert_called_once()
     assert msg['initial_timestamp'] == carla_timestamp
     assert msg['actors_positions'][0]['position'][0] == 1
+    # assert omnet_worl_listener.carla_init_completed.assert_called_once()
     # assert omnet_worl_listener.on_finished_creation_omnet_world.call_count == 1
     _end_server(p)
 
 
 def test_save_configuration():
-    port = random.randint(5000, 6000)
+    port = random.randint(5000, 8000)
     save_config_path = "tests/tmp"
 
     omnet_worl_listener = MagicMock()
@@ -72,8 +74,8 @@ def test_save_configuration():
     carla_actor.get_velocity.return_value = carla.Vector3D(1, 2, 3)
     # carla_actor.alive.return_value = True
     carla_actor.alive = True
-    omnet_worl_listener.on_finished_creation_omnet_world.return_value = carla_timestamp, SimulatorStatus.RUNNING
-    omnet_worl_listener.on_static_actor_created.return_value = carla_timestamp, carla_actor
+    omnet_worl_listener.omnet_init_completed.return_value = carla_timestamp, SimulatorStatus.RUNNING
+    omnet_worl_listener.actor_created.return_value = carla_timestamp, carla_actor
 
     p = _start_server(port, omnet_worl_listener, save_config_path=save_config_path)
     init_request = _read_request('init')
@@ -83,7 +85,7 @@ def test_save_configuration():
     _send_message(s, init_request)
     _ = _receive_message(s)  # omnet_worl_listener.on_finished_creation_omnet_world.assert_called_once()
 
-    with open(os.path.join(save_config_path, 'init.json'), 'r') as f:        # Load the JSON data into a Python object
+    with open(os.path.join(save_config_path, 'init.json'), 'r') as f:  # Load the JSON data into a Python object
         data = json.load(f)
         assert data == init_request
     shutil.rmtree(save_config_path)
@@ -113,8 +115,8 @@ def test_simulation_step_with_my_client():
     carla_timestamp = 0.76
 
     omnet_worl_listener = _create_init_listener()
-    omnet_worl_listener.on_carla_simulation_step.return_value = SimulatorStatus.RUNNING
-    # omnet_worl_listener.on_carla_simulation_step.return_value = carla_timestamp, SimulatorStatus.RUNNING
+    omnet_worl_listener.omnet_init_completed.return_value = carla_timestamp, SimulatorStatus.RUNNING
+    omnet_worl_listener.carla_simulation_step.return_value = SimulatorStatus.RUNNING
     p = _start_server(port, omnet_worl_listener)
     init_request = _read_request('init')
     init_request['moving_actors'] = []
@@ -124,7 +126,6 @@ def test_simulation_step_with_my_client():
     simulation_step_request = _read_request('simulation_step')
     _send_message(s, simulation_step_request)
     msg = _receive_message(s)
-    # omnet_worl_listener.on_carla_simulation_step.assert_called_once()
     _end_server(p)
 
 

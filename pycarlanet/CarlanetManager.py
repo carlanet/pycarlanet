@@ -47,10 +47,10 @@ class CarlanetManager:
                 msg = self._receive_data_from_omnet()
                 answer = self._message_handler.handle_message(msg)
                 self._send_data_to_omnet(answer)
-            self._omnet_world_listener.on_simulation_finished()
+            self._omnet_world_listener.simulation_finished()
 
         except Exception as e:
-            self._omnet_world_listener.on_simulation_error(e)
+            self._omnet_world_listener.simulation_error(e)
         finally:
             self.socket.close()
 
@@ -125,13 +125,15 @@ class InitMessageHandlerState(MessageHandlerState):
         self._save_config(message)
         res = dict()
         res['message_type'] = 'INIT_COMPLETED'
-        carla_timestamp, sim_status = self.omnet_world_listener.on_finished_creation_omnet_world(
+
+        carla_timestamp, sim_status = self.omnet_world_listener.omnet_init_completed(
             run_id=message['run_id'],
             carla_configuration=message['carla_configuration'],
             user_defined=message['user_defined'])
+
         for static_carlanet_actor in message['moving_actors']:
             actor_id = static_carlanet_actor['actor_id']
-            carla_timestamp, self._carlanet_actors[actor_id] = self.omnet_world_listener.on_static_actor_created(
+            carla_timestamp, self._carlanet_actors[actor_id] = self.omnet_world_listener.actor_created(
                 actor_id,
                 static_carlanet_actor['actor_type'],
                 static_carlanet_actor['actor_configuration']
@@ -139,6 +141,9 @@ class InitMessageHandlerState(MessageHandlerState):
         res['initial_timestamp'] = carla_timestamp
         res['simulation_status'] = sim_status.value
         res['actors_positions'] = self._generate_carla_nodes_positions()
+
+        #self.omnet_world_listener.carla_init_completed()
+
         if sim_status == SimulatorStatus.RUNNING:
             self._manager.set_message_handler_state(RunningMessageHandlerState)
         return res
@@ -148,7 +153,7 @@ class RunningMessageHandlerState(MessageHandlerState):
     def SIMULATION_STEP(self, message):
         res = dict()
         res['message_type'] = 'UPDATED_POSITIONS'
-        sim_status = self.omnet_world_listener.on_carla_simulation_step(message['timestamp'])
+        sim_status = self.omnet_world_listener.carla_simulation_step(message['timestamp'])
         res['simulation_status'] = sim_status.value
         res['actors_positions'] = self._generate_carla_nodes_positions()
         if sim_status != SimulatorStatus.RUNNING:
@@ -158,7 +163,7 @@ class RunningMessageHandlerState(MessageHandlerState):
     def GENERIC_MESSAGE(self, message):
         res = dict()
         res['message_type'] = 'GENERIC_RESPONSE'
-        sim_status, user_defined_response = self.omnet_world_listener.on_generic_message(message['timestamp'], message[
+        sim_status, user_defined_response = self.omnet_world_listener.generic_message(message['timestamp'], message[
             'user_defined_message'])
 
         res['simulation_status'] = sim_status.value
