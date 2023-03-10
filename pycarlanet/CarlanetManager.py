@@ -1,6 +1,6 @@
 import abc
 import json
-
+import os
 import carla
 import zmq
 
@@ -18,11 +18,12 @@ class UnknownMessageCarlanetError(RuntimeError):
 
 
 class CarlanetManager:
-    def __init__(self, listening_port, omnet_world_listener: OMNeTWorldListener):
+    def __init__(self, listening_port, omnet_world_listener: OMNeTWorldListener, save_config_path=None):
         self._listening_port = listening_port
         self._omnet_world_listener = omnet_world_listener
         self._message_handler: MessageHandlerState = None
         self._carlanet_actors = dict()
+        self._save_config_path = save_config_path
 
     def _start_server(self):
         context = zmq.Context()
@@ -114,8 +115,17 @@ class InitMessageHandlerState(MessageHandlerState):
 
     def __init__(self, carlanet_manager: CarlanetManager):
         super().__init__(carlanet_manager)
+        self._save_config_path = self._manager._save_config_path
+
+    def _save_config(self, message):
+        if self._save_config_path:
+            if not os.path.exists(self._save_config_path):
+                os.makedirs(self._save_config_path)
+            with open(os.path.join(self._save_config_path, 'init.json'), 'w') as f:
+                json.dump(message, f)
 
     def INIT(self, message):
+        self._save_config(message)
         res = dict()
         res['message_type'] = 'INIT_COMPLETED'
         carla_timestamp, sim_status = self.omnet_world_listener.on_finished_creation_omnet_world(
