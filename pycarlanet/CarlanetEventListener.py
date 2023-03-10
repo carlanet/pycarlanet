@@ -14,7 +14,7 @@ class SimulatorStatus(enum.Enum):
     FINISHED_ERROR = -1
 
 
-class OMNeTWorldListener(abc.ABC):
+class CarlanetEventListener(abc.ABC):
 
     def on_static_actor_created(self, actor_id: str, actor_type: str, actor_config) -> (float, CarlanetActor):
         """

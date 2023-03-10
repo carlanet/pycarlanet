@@ -4,10 +4,10 @@ from carla import libcarla, ActorBlueprint
 
 from pycarlanet import CarlanetActor
 from pycarlanet import CarlanetManager
-from pycarlanet import OMNeTWorldListener, SimulatorStatus
+from pycarlanet import CarlanetEventListener, SimulatorStatus
 
 
-class MyWorld(OMNeTWorldListener):
+class MyWorld(CarlanetEventListener):
     def __init__(self):
         self.carlanet_manager = CarlanetManager(5555, self)
 

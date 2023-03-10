@@ -4,7 +4,7 @@ import os
 import carla
 import zmq
 
-from pycarlanet import OMNeTWorldListener, SimulatorStatus
+from pycarlanet import CarlanetEventListener, SimulatorStatus
 from pycarlanet import CarlanetActor
 from pycarlanet.utils import preconditions
 
@@ -18,7 +18,7 @@ class UnknownMessageCarlanetError(RuntimeError):
 
 
 class CarlanetManager:
-    def __init__(self, listening_port, omnet_world_listener: OMNeTWorldListener, save_config_path=None):
+    def __init__(self, listening_port, omnet_world_listener: CarlanetEventListener, save_config_path=None):
         self._listening_port = listening_port
         self._omnet_world_listener = omnet_world_listener
         self._message_handler: MessageHandlerState = None
@@ -36,7 +36,6 @@ class CarlanetManager:
     def _receive_data_from_omnet(self):
         message = self.socket.recv()
         json_data = json.loads(message.decode("utf-8"))
-        print(json_data)
         self.timestamp = json_data['timestamp']
         return json_data
 
@@ -56,8 +55,6 @@ class CarlanetManager:
             self.socket.close()
 
     def _send_data_to_omnet(self, answer):
-        print(answer)
-
         self.socket.send(json.dumps(answer).encode('utf-8'))
 
     def set_message_handler_state(self, msg_handler_cls):
@@ -84,7 +81,7 @@ class CarlanetManager:
 class MessageHandlerState(abc.ABC):
     def __init__(self, carlanet_manager: CarlanetManager):
         self._manager = carlanet_manager
-        self.omnet_world_listener: OMNeTWorldListener = self._manager._omnet_world_listener
+        self.omnet_world_listener: CarlanetEventListener = self._manager._omnet_world_listener
         self._carlanet_actors = self._manager._carlanet_actors
 
     def handle_message(self, message):
