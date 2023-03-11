@@ -5,7 +5,7 @@ from pathlib import Path
 setup(
     name="pycarlanet",
     packages=find_packages(include=['pycarlanet', 'pycarlanet.utils']),
-    version="0.8.13-alpha",
+    version="0.8.14-alpha",
     long_description=Path("README.md").read_text(encoding="utf-8"),
     long_description_content_type='text/markdown',
     author="Valerio Cislaghi, Christian Quadri",

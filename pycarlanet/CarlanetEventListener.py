@@ -58,7 +58,7 @@ class CarlanetEventListener(abc.ABC):
         """
         ...
 
-    def simulation_finished(self):
+    def simulation_finished(self, status_code: SimulatorStatus):
         """
         Callback called upon successful completion of the simulation
         :return:

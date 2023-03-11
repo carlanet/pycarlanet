@@ -47,8 +47,7 @@ class CarlanetManager:
                 msg = self._receive_data_from_omnet()
                 answer = self._message_handler.handle_message(msg)
                 self._send_data_to_omnet(answer)
-            self._omnet_world_listener.simulation_finished()
-
+            self._omnet_world_listener.simulation_finished(self._message_handler.simulator_status_code)
         except Exception as e:
             self._omnet_world_listener.simulation_error(e)
         finally:
@@ -57,8 +56,8 @@ class CarlanetManager:
     def _send_data_to_omnet(self, answer):
         self.socket.send(json.dumps(answer).encode('utf-8'))
 
-    def set_message_handler_state(self, msg_handler_cls):
-        self._message_handler = msg_handler_cls(self)
+    def set_message_handler_state(self, msg_handler_cls, *args):
+        self._message_handler = msg_handler_cls(self, *args)
 
     def add_dynamic_actor(self, actor_id: str, carlanet_actor: CarlanetActor):
         """
@@ -142,7 +141,7 @@ class InitMessageHandlerState(MessageHandlerState):
         res['simulation_status'] = sim_status.value
         res['actors_positions'] = self._generate_carla_nodes_positions()
 
-        #self.omnet_world_listener.carla_init_completed()
+        # self.omnet_world_listener.carla_init_completed()
 
         if sim_status == SimulatorStatus.RUNNING:
             self._manager.set_message_handler_state(RunningMessageHandlerState)
@@ -157,7 +156,7 @@ class RunningMessageHandlerState(MessageHandlerState):
         res['simulation_status'] = sim_status.value
         res['actors_positions'] = self._generate_carla_nodes_positions()
         if sim_status != SimulatorStatus.RUNNING:
-            self._manager.set_message_handler_state(FinishedMessageHandlerState)
+            self._manager.set_message_handler_state(FinishedMessageHandlerState, sim_status)
         return res
 
     def GENERIC_MESSAGE(self, message):
@@ -170,9 +169,11 @@ class RunningMessageHandlerState(MessageHandlerState):
         res['user_defined_response'] = user_defined_response
 
         if sim_status != SimulatorStatus.RUNNING:
-            self._manager.set_message_handler_state(FinishedMessageHandlerState)
+            self._manager.set_message_handler_state(FinishedMessageHandlerState, sim_status)
         return res
 
 
 class FinishedMessageHandlerState(MessageHandlerState):
-    ...
+    def __init__(self, carlanet_manager: CarlanetManager, simulator_status_code: SimulatorStatus):
+        super().__init__(carlanet_manager)
+        self.simulator_status_code = simulator_status_code
