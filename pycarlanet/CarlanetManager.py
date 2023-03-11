@@ -18,15 +18,18 @@ class UnknownMessageCarlanetError(RuntimeError):
 
 
 class CarlanetManager:
-    def __init__(self, listening_port, omnet_world_listener: CarlanetEventListener, save_config_path=None):
+    def __init__(self, listening_port, omnet_world_listener: CarlanetEventListener, save_config_path=None, socket_options=None):
         self._listening_port = listening_port
         self._omnet_world_listener = omnet_world_listener
         self._message_handler: MessageHandlerState = None
         self._carlanet_actors = dict()
         self._save_config_path = save_config_path
+        self.socket_options = socket_options if socket_options else {}
 
     def _start_server(self):
         context = zmq.Context()
+        for opt_name, opt_value in self.socket_options.items():
+            context.setsockopt(opt_name, opt_value)
         self.socket = context.socket(zmq.REP)
         self.socket.setsockopt(zmq.CONFLATE, 1)
         self.socket.setsockopt(zmq.LINGER, 100)
