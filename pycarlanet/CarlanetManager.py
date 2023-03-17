@@ -144,7 +144,7 @@ class InitMessageHandlerState(MessageHandlerState):
         res['simulation_status'] = sim_status.value
         res['actors_positions'] = self._generate_carla_nodes_positions()
 
-        # self.omnet_world_listener.carla_init_completed()
+        self.omnet_world_listener.carla_init_completed()
 
         if sim_status == SimulatorStatus.RUNNING:
             self._manager.set_message_handler_state(RunningMessageHandlerState)
@@ -166,7 +166,7 @@ class RunningMessageHandlerState(MessageHandlerState):
         res = dict()
         res['message_type'] = 'GENERIC_RESPONSE'
         sim_status, user_defined_response = self.omnet_world_listener.generic_message(message['timestamp'], message[
-            'user_defined_message'])
+            'user_defined'])
 
         res['simulation_status'] = sim_status.value
         res['user_defined_response'] = user_defined_response
