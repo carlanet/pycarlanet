@@ -183,7 +183,7 @@ class RunningMessageHandlerState(MessageHandlerState):
             'user_defined'])
 
         res['simulation_status'] = sim_status.value
-        res['user_defined_response'] = user_defined_response
+        res['user_defined'] = user_defined_response
 
         if sim_status != SimulatorStatus.RUNNING:
             self._manager.set_message_handler_state(FinishedMessageHandlerState, sim_status)
