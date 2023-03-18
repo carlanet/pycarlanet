@@ -44,7 +44,7 @@ class MyWorld(CarlanetEventListener):
         self.client, self.sim_world = client, sim_world
         self.carla_map = self.sim_world.get_map()
 
-        return self.sim_world.get_snapshot().timestamp.elapsed_seconds, SimulatorStatus.RUNNING
+        return SimulatorStatus.RUNNING, self.sim_world
 
     def on_static_actor_created(self, actor_id: str, actor_type: str, actor_config: dict) -> (float, CarlanetActor):
         if actor_type == 'car':  # and actor_id == 'car_1':
@@ -67,7 +67,7 @@ class MyWorld(CarlanetEventListener):
         carlanet_actor = CarlanetActor(carla_actor, True)
         self.carlanet_actors[actor_id] = carlanet_actor
         self.sim_world.tick()
-        return self.sim_world.get_snapshot().timestamp.elapsed_seconds, carlanet_actor
+        return carlanet_actor
 
     def carla_simulation_step(self, timestamp) -> SimulatorStatus:
         self.sim_world.tick()

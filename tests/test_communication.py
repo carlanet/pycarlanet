@@ -3,7 +3,7 @@ import multiprocessing
 import os
 import shutil
 from time import sleep
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock, PropertyMock
 import pytest
 import carla
 import zmq
@@ -41,13 +41,20 @@ def test_init_with_my_client():
     omnet_worl_listener.carla_init_completed = MagicMock()
     carla_timestamp = random.randint(1, 100) / 100
 
+    omnet_world = MagicMock()
+    omnet_world.get_snapshot = MagicMock()
+    snapshot = MagicMock()
+    snapshot.timestamp.elapsed_seconds = carla_timestamp
+    omnet_world.get_snapshot.return_value = snapshot
+
+
     carla_actor = MagicMock()
     carla_actor.get_transform.return_value = carla.Transform(carla.Location(1, 2, 3), carla.Rotation(1, 2, 3))
     carla_actor.get_velocity.return_value = carla.Vector3D(1, 2, 3)
     # carla_actor.alive.return_value = True
     carla_actor.alive = True
-    omnet_worl_listener.omnet_init_completed.return_value = carla_timestamp, SimulatorStatus.RUNNING
-    omnet_worl_listener.actor_created.return_value = carla_timestamp, carla_actor
+    omnet_worl_listener.omnet_init_completed.return_value = SimulatorStatus.RUNNING, omnet_world
+    omnet_worl_listener.actor_created.return_value = carla_actor
 
     p = _start_server(port, omnet_worl_listener)
     init_request = _read_request('init')
@@ -55,6 +62,7 @@ def test_init_with_my_client():
     s = _connect('localhost', port)
     _send_message(s, init_request)
     msg = _receive_message(s)  # omnet_worl_listener.on_finished_creation_omnet_world.assert_called_once()
+
     assert msg['initial_timestamp'] == carla_timestamp
     assert msg['actors_positions'][0]['position'][0] == 1
     # assert omnet_worl_listener.carla_init_completed.assert_called_once()
@@ -69,13 +77,19 @@ def test_save_configuration():
     omnet_worl_listener = MagicMock()
     carla_timestamp = random.randint(1, 100) / 100
 
+    omnet_world = MagicMock()
+    omnet_world.get_snapshot = MagicMock()
+    snapshot = MagicMock()
+    snapshot.timestamp.elapsed_seconds = carla_timestamp
+    omnet_world.get_snapshot.return_value = snapshot
+
     carla_actor = MagicMock()
     carla_actor.get_transform.return_value = carla.Transform(carla.Location(1, 2, 3), carla.Rotation(1, 2, 3))
     carla_actor.get_velocity.return_value = carla.Vector3D(1, 2, 3)
     # carla_actor.alive.return_value = True
     carla_actor.alive = True
-    omnet_worl_listener.omnet_init_completed.return_value = carla_timestamp, SimulatorStatus.RUNNING
-    omnet_worl_listener.actor_created.return_value = carla_timestamp, carla_actor
+    omnet_worl_listener.omnet_init_completed.return_value = SimulatorStatus.RUNNING, omnet_world
+    omnet_worl_listener.actor_created.return_value = carla_actor
 
     p = _start_server(port, omnet_worl_listener, save_config_path=save_config_path)
     init_request = _read_request('init')
@@ -114,8 +128,14 @@ def test_simulation_step_with_my_client():
     s = _connect('localhost', port)
     carla_timestamp = 0.76
 
+    omnet_world = MagicMock()
+    omnet_world.get_snapshot = MagicMock()
+    snapshot = MagicMock()
+    snapshot.timestamp.elapsed_seconds = carla_timestamp
+    omnet_world.get_snapshot.return_value = snapshot
+
     omnet_worl_listener = _create_init_listener()
-    omnet_worl_listener.omnet_init_completed.return_value = carla_timestamp, SimulatorStatus.RUNNING
+    omnet_worl_listener.omnet_init_completed.return_value = SimulatorStatus.RUNNING, omnet_world
     omnet_worl_listener.carla_simulation_step.return_value = SimulatorStatus.RUNNING
     p = _start_server(port, omnet_worl_listener)
     init_request = _read_request('init')

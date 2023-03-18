@@ -2,6 +2,7 @@ import abc
 import enum
 
 from pycarlanet import CarlanetActor
+from carla.libcarla import World
 
 """
 Listener for OMNeT world, note, every parameters gave as in input is a String, so eventually you need to use cast
@@ -17,23 +18,23 @@ class SimulatorStatus(enum.Enum):
 
 class CarlanetEventListener(abc.ABC):
 
-    def omnet_init_completed(self, run_id, carla_configuration, user_defined) -> (float, SimulatorStatus):
+    def omnet_init_completed(self, run_id, carla_configuration, user_defined) -> (SimulatorStatus, World):
         """
         :param run_id: id corresponding to the one in OMNeT++
         :param carla_configuration:
         :param user_defined:
-        :return: current carla world timestamp (see Snapshot class of CarlaAPI), current simulator status
+        :return: current carla world, current simulator status
         """
         ...
 
-    def actor_created(self, actor_id: str, actor_type: str, actor_config) -> (float, CarlanetActor):
+    def actor_created(self, actor_id: str, actor_type: str, actor_config) -> CarlanetActor:
         """
         Called at the beginning of the simulation, OMNeT says which actors it has and communicate
         with carla to create those actors in the world
         :param actor_id:
         :param actor_type:
         :param actor_config:
-        :return: current carla world timestamp (see Snapshot class of CarlaAPI), new actor created from carlaWorld
+        :return: new actor created from carlaWorld
         """
         ...
         ##return Actor
@@ -42,9 +43,17 @@ class CarlanetEventListener(abc.ABC):
         """Called when the initialization of CARLA World is finished"""
         ...
 
+    def before_world_tick(self, timestamp) -> None:
+        """
+        Method called before a world tick called by OMNeT++
+        :param timestamp
+        :return: current simulator status
+        """
+        ...
+
     def carla_simulation_step(self, timestamp) -> SimulatorStatus:
         """
-        Method called every time OMNeT call simulation_step of Carla
+        Method called after a world tick called by OMNeT++
         :param timestamp
         :return: current simulator status
         """

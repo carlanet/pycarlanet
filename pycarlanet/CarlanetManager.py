@@ -3,6 +3,7 @@ import json
 import os
 import carla
 import zmq
+from carla.libcarla import World
 
 from pycarlanet import CarlanetEventListener, SimulatorStatus
 from pycarlanet import CarlanetActor
@@ -17,14 +18,17 @@ class UnknownMessageCarlanetError(RuntimeError):
         return "I don't know how to handle the following msg: " + self.unknown_msg['message_type']
 
 
+# .get_snapshot().timestamp.elapsed_seconds
 class CarlanetManager:
-    def __init__(self, listening_port, omnet_world_listener: CarlanetEventListener, save_config_path=None, socket_options=None):
+    def __init__(self, listening_port, omnet_world_listener: CarlanetEventListener, save_config_path=None,
+                 socket_options=None):
         self._listening_port = listening_port
         self._omnet_world_listener = omnet_world_listener
         self._message_handler: MessageHandlerState = None
         self._carlanet_actors = dict()
         self._save_config_path = save_config_path
         self.socket_options = socket_options if socket_options else {}
+        self.carla_world: World = None
 
     def _start_server(self):
         context = zmq.Context()
@@ -79,6 +83,9 @@ class CarlanetManager:
         """
         del self._carlanet_actors[actor_id]
 
+    def get_curr_sim_timestamp(self):
+        return self.carla_world.get_snapshot().timestamp.elapsed_seconds
+
 
 class MessageHandlerState(abc.ABC):
     def __init__(self, carlanet_manager: CarlanetManager):
@@ -124,23 +131,27 @@ class InitMessageHandlerState(MessageHandlerState):
                 json.dump(message, f)
 
     def INIT(self, message):
+
         self._save_config(message)
         res = dict()
         res['message_type'] = 'INIT_COMPLETED'
 
-        carla_timestamp, sim_status = self.omnet_world_listener.omnet_init_completed(
+        sim_status, carla_world = self.omnet_world_listener.omnet_init_completed(
             run_id=message['run_id'],
             carla_configuration=message['carla_configuration'],
             user_defined=message['user_defined'])
 
+        self._manager.carla_world = carla_world
+
         for static_carlanet_actor in message['moving_actors']:
             actor_id = static_carlanet_actor['actor_id']
-            carla_timestamp, self._carlanet_actors[actor_id] = self.omnet_world_listener.actor_created(
+            self._carlanet_actors[actor_id] = self.omnet_world_listener.actor_created(
                 actor_id,
                 static_carlanet_actor['actor_type'],
                 static_carlanet_actor['actor_configuration']
             )
-        res['initial_timestamp'] = carla_timestamp
+
+        res['initial_timestamp'] = self._manager.get_curr_sim_timestamp()
         res['simulation_status'] = sim_status.value
         res['actors_positions'] = self._generate_carla_nodes_positions()
 
@@ -148,12 +159,15 @@ class InitMessageHandlerState(MessageHandlerState):
 
         if sim_status == SimulatorStatus.RUNNING:
             self._manager.set_message_handler_state(RunningMessageHandlerState)
+
         return res
 
 
 class RunningMessageHandlerState(MessageHandlerState):
     def SIMULATION_STEP(self, message):
         res = dict()
+        self.omnet_world_listener.before_world_tick(message['timestamp'])
+        self._manager.carla_world.tick()
         res['message_type'] = 'UPDATED_POSITIONS'
         sim_status = self.omnet_world_listener.carla_simulation_step(message['timestamp'])
         res['simulation_status'] = sim_status.value
