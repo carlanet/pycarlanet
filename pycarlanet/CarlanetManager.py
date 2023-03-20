@@ -153,7 +153,7 @@ class InitMessageHandlerState(MessageHandlerState):
 
         res['initial_timestamp'] = self._manager.get_curr_sim_timestamp()
         res['simulation_status'] = sim_status.value
-        res['actors_positions'] = self._generate_carla_nodes_positions()
+        res['actor_positions'] = self._generate_carla_nodes_positions()
 
         self.omnet_world_listener.carla_init_completed()
 
@@ -171,7 +171,7 @@ class RunningMessageHandlerState(MessageHandlerState):
         res['message_type'] = 'UPDATED_POSITIONS'
         sim_status = self.omnet_world_listener.carla_simulation_step(message['timestamp'])
         res['simulation_status'] = sim_status.value
-        res['actors_positions'] = self._generate_carla_nodes_positions()
+        res['actor_positions'] = self._generate_carla_nodes_positions()
         if sim_status != SimulatorStatus.RUNNING:
             self._manager.set_message_handler_state(FinishedMessageHandlerState, sim_status)
         return res
