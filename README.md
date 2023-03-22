@@ -17,5 +17,5 @@ pip install pycarlanet
 ```
 
 ## Usage
-To learn how to utilize this library, refer to the [sample code provided](https://github.com/jaivra/pycarlanet/blob/main/sample/template_car_pedestrian.py).
+To learn how to utilize this library, refer to the [sample code provided](https://github.com/carlanet/pycarlanet/blob/main/sample/sample_car_light.py).
 A preliminary version of the documentation will be available soon.
