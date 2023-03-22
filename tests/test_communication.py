@@ -64,7 +64,7 @@ def test_init_with_my_client():
     msg = _receive_message(s)  # omnet_worl_listener.on_finished_creation_omnet_world.assert_called_once()
 
     assert msg['initial_timestamp'] == carla_timestamp
-    assert msg['actors_positions'][0]['position'][0] == 1
+    assert msg['actor_positions'][0]['position'][0] == 1
     # assert omnet_worl_listener.carla_init_completed.assert_called_once()
     # assert omnet_worl_listener.on_finished_creation_omnet_world.call_count == 1
     _end_server(p)
