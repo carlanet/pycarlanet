@@ -4,8 +4,8 @@ pyCARLANeT
 pyCARLANeT is the carla side of the open source library CARLANeT for the co-simulation between CARLA and OMNeT++.
 
 ## Requirements
-In accordance to [CARLA documentation](https://carla.readthedocs.io/en/latest/start_quickstart/), pyCARLANeT is compatible with Python version 3.8.x. and with pip > 22.x.
-To upgrade pip you can use:
+
+According to the [CARLA documentation](https://carla.readthedocs.io/en/latest/start_quickstart/), pyCARLANeT is compatible with Python version 3.8.x and pip version greater than 22.x. To upgrade pip, you can use:
 ```shell
 pip install --upgrade pip==22.*
 ```
