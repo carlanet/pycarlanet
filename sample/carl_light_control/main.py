@@ -1,6 +1,7 @@
 import random
 import carla
 from carla import libcarla, ActorBlueprint, World
+import traceback
 
 from pycarlanet import CarlanetActor
 from pycarlanet import CarlanetManager
@@ -17,11 +18,14 @@ class MyWorld(CarlanetEventListener):
     def __init__(self, host, port):
         self.host = host
         self.port = port
-        self.carlanet_manager = CarlanetManager(5555, self)
+        self.carlanet_manager = CarlanetManager(5555, self, log_messages=True)
 
         self.client = self.sim_world = self.carla_map = None
         self.carlanet_actors = dict()
         self.remote_agent = RemoteAgent()
+
+    def start_simulation(self):
+        self.carlanet_manager.start_simulation()
 
     def omnet_init_completed(self, run_id, carla_configuration, user_defined) -> (SimulatorStatus, World):
         random.seed(carla_configuration['seed'])
@@ -94,7 +98,7 @@ class MyWorld(CarlanetEventListener):
             msg_to_send = {'msg_type': 'light_state',
                            'state': self.carlanet_actors[actor_id].get_traffic_light_state()}
             return SimulatorStatus.RUNNING, msg_to_send
-        elif user_defined_message['msg_type'] == 'light_state':
+        elif user_defined_message['msg_type'] == 'LIGHT_COMMAND':
             msg_to_send = {'msg_type': 'change_light',
                            'new_state': self.remote_agent.calc_next_light_state(user_defined_message['light_state'])}
             return SimulatorStatus.RUNNING, msg_to_send
@@ -105,10 +109,14 @@ class MyWorld(CarlanetEventListener):
         super().simulation_finished(status_code)
 
     def simulation_error(self, exception):
+        traceback.print_exc()
         super().simulation_error(exception)
 
 
 class RemoteAgent:
+
+    def __init__(self):
+        self.light_state = carla.VehicleLightState.NONE
 
     def calc_next_light_state(self, light_state: carla.VehicleLightState):
         if light_state == carla.VehicleLightState.Position:
@@ -120,3 +128,7 @@ class RemoteAgent:
         else:
             next_state = carla.VehicleLightState.NONE
         return next_state
+
+if __name__ == '__main__':
+    my_world = MyWorld('host', 2000)
+    my_world.start_simulation()

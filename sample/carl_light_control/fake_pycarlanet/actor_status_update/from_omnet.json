@@ -1,0 +1,8 @@
+{
+  "message_type": "GENERIC_MESSAGE",
+  "timestamp": 0,
+  "user_defined": {
+    "user_message_type": "ACTOR_STATUS_UPDATE",
+    "actor_id": "car_id"
+  }
+}

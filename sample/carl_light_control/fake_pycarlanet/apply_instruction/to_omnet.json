@@ -1,0 +1,7 @@
+{
+  "message_type": "GENERIC_RESPONSE",
+  "simulation_status": 0,
+  "user_defined": {
+    "user_message_type": "OK"
+  }
+}

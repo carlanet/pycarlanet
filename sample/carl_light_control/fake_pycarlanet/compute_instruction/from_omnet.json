@@ -1,0 +1,10 @@
+{
+  "message_type": "GENERIC_MESSAGE",
+  "timestamp": 0,
+  "user_defined": {
+    "user_message_type": "COMPUTE_INSTRUCTION",
+    "actor_id": "car_id",
+    "agent_id": "agent_id",
+    "status_id": "status_id"
+  }
+}

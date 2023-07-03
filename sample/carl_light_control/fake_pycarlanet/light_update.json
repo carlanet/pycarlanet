@@ -1,0 +1,8 @@
+{
+    "message_type": "GENERIC_RESPONSE",
+    "simulation_status": 0,
+    "user_defined": {
+        "msg_type": "LIGHT_UPDATE",
+        "light_curr_state": "1"
+    }
+}

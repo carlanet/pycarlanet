@@ -1,0 +1,25 @@
+{
+  "message_type": "UPDATED_POSITIONS",
+  "actors_positions": [
+    {
+      "actor_id": "car",
+      "position": [
+        0.1,
+        0.1,
+        0.1
+      ],
+      "velocity": [
+        0.1,
+        0.1,
+        0.1
+      ],
+      "rotation": [
+        0.1,
+        0.1,
+        0.1
+      ],
+      "is_net_active": true
+    }
+  ],
+  "simulation_status": 0
+}

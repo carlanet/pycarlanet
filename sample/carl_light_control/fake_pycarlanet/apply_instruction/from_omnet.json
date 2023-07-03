@@ -1,0 +1,9 @@
+{
+  "message_type": "GENERIC_MESSAGE",
+  "timestamp": 0,
+  "user_defined": {
+    "user_message_type": "APPLY_INSTRUCTION",
+    "actor_id": "car_id",
+    "instruction_id": "instruction_id"
+  }
+}

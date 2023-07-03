@@ -1,0 +1,9 @@
+{
+  "message_type": "GENERIC_RESPONSE",
+  "simulation_status": 0,
+  "user_defined": {
+    "user_message_type": "ACTOR_STATUS",
+    "actor_id": "car",
+    "status_id": "status_id"
+  }
+}
