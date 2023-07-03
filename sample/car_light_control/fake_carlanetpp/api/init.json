@@ -1,0 +1,22 @@
+{
+    "message_type": "INIT",
+    "timestamp": 0,
+    "run_id": "100",
+    "moving_actors": [
+      {
+        "actor_id": "car_id",
+        "actor_type": "car",
+        "actor_configuration": {
+            "car_model": "tesla"
+        }
+      }
+    ],
+    "carla_configuration": {
+      "seed": 11120,
+      "sim_time_limit": 26,
+      "carla_timestep": 0.01
+    },
+    "user_defined": {
+      "carla_world": "Town01_Opt"
+    }
+  }
