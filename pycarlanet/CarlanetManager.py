@@ -21,11 +21,12 @@ class UnknownMessageCarlanetError(RuntimeError):
 # .get_snapshot().timestamp.elapsed_seconds
 class CarlanetManager:
     def __init__(self, listening_port, omnet_world_listener: CarlanetEventListener, save_config_path=None,
-                 socket_options=None):
+                 socket_options=None, log_messages=False):
         self._listening_port = listening_port
         self._omnet_world_listener = omnet_world_listener
         self._message_handler: MessageHandlerState = None
         self._carlanet_actors = dict()
+        self._log_messages = log_messages
         self._save_config_path = save_config_path
         self.socket_options = socket_options if socket_options else {}
         self.carla_world: World = None
@@ -44,6 +45,8 @@ class CarlanetManager:
         message = self.socket.recv()
         json_data = json.loads(message.decode("utf-8"))
         self.timestamp = json_data['timestamp']
+        if self._log_messages:
+            print(f'Received msg: {json_data}\n')
         return json_data
 
     def start_simulation(self):
@@ -61,6 +64,8 @@ class CarlanetManager:
             self.socket.close()
 
     def _send_data_to_omnet(self, answer):
+        if self._log_messages:
+            print(f'Sending msg: {answer}\n')
         self.socket.send(json.dumps(answer).encode('utf-8'))
 
     def set_message_handler_state(self, msg_handler_cls, *args):
