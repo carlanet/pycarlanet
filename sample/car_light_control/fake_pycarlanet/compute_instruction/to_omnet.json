@@ -1,9 +1,0 @@
-{
-  "message_type": "GENERIC_RESPONSE",
-  "simulation_status": 0,
-  "user_defined": {
-    "user_message_type": "INSTRUCTION",
-    "actor_id": "car",
-    "instruction_id": "instruction_id"
-  }
-}

@@ -28,7 +28,7 @@ def receive_info(socket):
 
 if __name__ == '__main__':
     simulation_step = 0.01
-    refresh_status = 0.05
+    transmission_delay = 0.05
     delay = 0  # TODO implements this feature
 
     context = zmq.Context()
@@ -36,14 +36,27 @@ if __name__ == '__main__':
     socket.connect("tcp://localhost:5555")
     print("connected")
 
+    limit_sim_time = 15
     req = read_json('init')
     send_info(socket, req)
-    message = receive_info(socket)
-    timestamp = message['payload']['initial_timestamp']
-    limit_sim_time = 15
 
+    message = receive_info(socket)
+    timestamp = message['initial_timestamp']
+
+    light_curr_state = 0
+    light_next_state = 0
     while True:
-        for _ in np.arange(0, refresh_status, simulation_step):
+        req = read_json('light_update')
+        req['user_defined']['light_curr_state'] = light_curr_state
+        req['timestamp'] = timestamp
+        send_info(socket, req)
+        message = receive_info(socket)
+        if message['simulation_status'] != 0:
+            break
+        
+        light_next_state = message['user_defined']['light_next_state']
+        
+        for _ in np.arange(0, transmission_delay, simulation_step):
             timestamp += simulation_step
             req = read_json('simulation_step')
 
@@ -51,25 +64,9 @@ if __name__ == '__main__':
             send_info(socket, req)
             message = receive_info(socket)
 
-        req = read_json('actor_status_update')
-        req['timestamp'] = timestamp
-        send_info(socket, req)
-        message = receive_info(socket)
-        status_id = message['payload']['status_id']
-        simulation_status = 0 if limit_sim_time > timestamp else 1
-        req = read_json('compute_instruction')
-        req['payload']['status_id'] = status_id
-        req['timestamp'] = timestamp
-        send_info(socket, req)
-        if simulation_status != 0:
-            break
-        message = receive_info(socket)
-        instruction_id = message['payload']['instruction_id']
-        if message['simulation_status'] != 0:
-            break
-
-        req = read_json('apply_instruction')
-        req['payload']['instruction_id'] = instruction_id
+        req = read_json('light_command')
+        req['user_defined']['light_next_state'] = light_next_state
         req['timestamp'] =  timestamp
         send_info(socket, req)
         message = receive_info(socket)
+        light_curr_state = message['user_defined']['light_curr_state']

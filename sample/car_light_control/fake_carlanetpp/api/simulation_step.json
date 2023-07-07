@@ -1,0 +1,5 @@
+{
+    "message_type": "SIMULATION_STEP",
+    "carla_timestep": 0.05,
+    "timestamp": 0
+  }

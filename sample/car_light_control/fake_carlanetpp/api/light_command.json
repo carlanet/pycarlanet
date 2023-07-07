@@ -1,0 +1,8 @@
+{
+    "message_type": "GENERIC_MESSAGE",
+    "simulation_status": 0,
+    "user_defined": {
+        "msg_type": "LIGHT_COMMAND",
+        "light_next_state": "1"
+    }
+}
