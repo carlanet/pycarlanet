@@ -5,11 +5,10 @@ import pandas as pd
 import zmq
 
 
-def read_json(path):
-    with open(path) as f:
+def read_json(type_request):
+    with open(f'sample/car_light_control/fake_pycarlanet/api/{type_request}.json') as f:
         return json.load(f)
-
-
+    
 def send_info(socket, t):
     socket.send(json.dumps(t).encode("utf-8"))
 
@@ -52,7 +51,7 @@ if __name__ == '__main__':
     json_data = json.loads(recv_msg.decode("utf-8"))
     print("recv:", json_data)
     car_id = json_data['moving_actors'][0]['actor_id']
-    msg = read_json('sample/standalone_rensponse_generator/init.json')
+    msg = read_json('init.json')
 
     actor_status = generate_updated_position(next(data_iterators))
     msg['actor_positions'][0]['actor_id'] = car_id
@@ -71,17 +70,17 @@ if __name__ == '__main__':
         if json_data['message_type'] == 'GENERIC_MESSAGE':
             print("recv:", json_data)
             if json_data['user_defined']['msg_type'] == 'LIGHT_UPDATE':
-                msg = read_json('sample/standalone_rensponse_generator/light_command.json')
+                msg = read_json('light_command.json')
                 msg['user_defined']['light_next_state'] = str(int(json_data['user_defined']['light_curr_state']))
             elif json_data['user_defined']['msg_type'] == 'LIGHT_COMMAND':
-                msg = read_json('sample/standalone_rensponse_generator/light_update.json')
+                msg = read_json('light_update.json')
                 msg['user_defined']['light_curr_state'] = str((int(json_data['user_defined']['light_next_state']) + 1) % 4)
             else:
                 raise Exception("general message not recognized: " + json_data['user_defined']['user_message_type'])
             print('send:', msg, '\n\n')
 
         elif json_data['message_type'] == 'SIMULATION_STEP':
-            msg = read_json('sample/standalone_rensponse_generator/simulation_step.json')
+            msg = read_json('simulation_step.json')
             msg['actor_positions'] = []
 
             next_position = next(data_iterators, None)
