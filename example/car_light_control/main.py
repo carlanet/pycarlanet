@@ -8,7 +8,7 @@ from pycarlanet import CarlanetActor
 from pycarlanet import CarlanetManager
 from pycarlanet import CarlanetEventListener, SimulatorStatus
 
-from sample.car_light_control.carla_window import HUD, TeleCarlaCameraSensor
+from example.car_light_control.carla_window import HUD, TeleCarlaCameraSensor
 
 
 """This example demonstrates a car equipped with an automatic pilot, where the state of the car's lights is controlled 

@@ -1,7 +1,7 @@
 pyCARLANeT
 ===============
 ## Introduction
-pyCARLANeT is the carla side of the open source library CARLANeT for the co-simulation between CARLA and OMNeT++.
+pyCARLANeT is the carla side of the open source library [CARLANeT](https://github.com/carlanet) for the co-simulation between CARLA and OMNeT++.
 
 ## Requirements
 
@@ -29,7 +29,7 @@ First, create an instance of the **\`CarlanetManager\`** class:
 carlanet_manager = CarlanetManager(listening_port, event_listener)
 ```
 
-In the code above, **\`listening_port\`** is the port number used by ZeroMQ for communication between the two sides of CARLANeT, which must be the same in CARLANeTpp. **\`event_listener\`** is an implementation of the class CarlaEventListener, which contains all the callback methods of the event of CARLANeT. The callbacks are the follow:
+In the code above, **\`listening_port\`** is the port number used by ZeroMQ for communication between the two sides of CARLANeT, which must be the same in [CARLANeTpp](https://github.com/carlanet/carlanetpp). **\`event_listener\`** is an implementation of the class CarlaEventListener, which contains all the callback methods of the event of CARLANeT. The callbacks are the follow:
 
 - **`omnet_init_completed(run_id, carla_configuration, user_defined) -> (SimulatorStatus, World)`**<br>
   This method is called when the initialization in the OMNeT world is completed. Here, you can insert the initialization code for the CARLA world. This method receives:
@@ -48,7 +48,7 @@ In the code above, **\`listening_port\`** is the port number used by ZeroMQ for 
   - **\`actor_id\`:** the identifier of the actor. 
   - **\`actor_type\`:**  the type of the actor.
   - **\`actor_config\`:** custom parameters for the actor defined by the specific application.
-  This method returns an object of CarlanetActor, which is a wrapper of the CarlaActor object contained in the carlalib library. The CarlanetActor object adds the property of activeness of the actor, which is used to control the actor location by CARLANeTpp in OMNeT++.
+  This method returns an object of CarlanetActor, which is a wrapper of the CarlaActor object contained in the carlalib library. The CarlanetActor object adds the property of activeness of the actor, which is used to control the actor location by [CARLANeTpp](https://github.com/carlanet/carlanetpp) in OMNeT++.
 
 - **`carla_init_completed()`**<br>
   This method is called when the initialization of the CARLA World is finished.
@@ -66,7 +66,7 @@ In the code above, **\`listening_port\`** is the port number used by ZeroMQ for 
   This method is called when a generic message is received. This method receives:
   - **\`timestamp\`:** the current timestamp of the CARLA world.
   - **\`user_defined_message\`:** custom parameters for the message defined by the specific application.
-  This method returns a tuple containing the current SimulatorStatus and a dictionary of user-defined data, that representes the answer to send to CARLANeTpp.
+  This method returns a tuple containing the current SimulatorStatus and a dictionary of user-defined data, that representes the answer to send to [CARLANeTpp](https://github.com/carlanet/carlanetpp).
 
 - **`simulation_finished(status_code: SimulatorStatus)`**<br>
   this method is called when the simulation is finished.
@@ -79,11 +79,57 @@ CARLANeT allows for dynamic addition and removal of actors:
 carlanet_manager.add_dynamic_actor(actor_id: str, carlanet_actor: CarlanetActor)
 carlanet_manager.remove_actor(actor_id: str)
 ```
-Please note that these operations are related to the CARLA world and must be initiated from pyCARLANeT, as it is responsible for handling the actors. pyCARLANeT only notifies CARLANeTpp of any additions or removals, and CARLANeTpp takes appropriate action. Therefore, when adding or removing an actor from the CARLA world, you must first apply these operations using your own code in the CARLA world and then call the corresponding method in CarlanetManager. This method will notify the OMNeT++ world accordingly.
+Please note that these operations are related to the CARLA world and must be initiated from pyCARLANeT, as it is responsible for handling the actors. pyCARLANeT only notifies [CARLANeTpp](https://github.com/carlanet/carlanetpp) of any additions or removals, and [CARLANeTpp](https://github.com/carlanet/carlanetpp) takes appropriate action. Therefore, when adding or removing an actor from the CARLA world, you must first apply these operations using your own code in the CARLA world and then call the corresponding method in CarlanetManager. This method will notify the OMNeT++ world accordingly.
 
 
-## Sample
+## Example
 
-The sample code provided in this repository demonstrates a simple application with a car and an application agent that controls the car's lights remotely. The communication network used in this sample can be found in the corresponding sample code in CARLANeTpp.
 
-To access the sample code, please see [sample_car_light.py](https://github.com/carlanet/pycarlanet/blob/main/sample/sample_car_light.py).
+This repository provides an example of co-simulation between CARLA and OMNeT++ using CARLANeT. The sample code demonstrates a simple application that includes a car and an application agent controlling the car's lights remotely. The communication network utilized in this sample can be found in the corresponding sample code in [CARLANeTpp](https://github.com/carlanet/carlanetpp).
+
+To access the sample code, please see [main.py](https://github.com/carlanet/pycarlanet/blob/main/example/car_light_control/main.py).
+
+
+NOTE: Before running this example, ensure that all the requirements are satisfied and the installation is completed following the instructions provided at the beginning of this page.
+
+To run the sample code, please follow these steps:
+
+1. Clone the repository by running the following command:
+```shell
+git clone https://github.com/carlanet/pycarlanet
+```
+
+2. Move to the root of the repository:
+```shell
+cd pycarlanet
+```
+
+3. Run the following command to execute the pyCARLANeT example:
+```shell
+python -m example.car_light_control.main <carla-simulator-host> <carla-port>
+```
+
+Replace `<carla-simulator-host>` and `<carla-port>` with the appropriate parameters based on where CARLA is running and on which port.
+
+
+Note: [ToD-simulator](https://github.com/connets/tod-simulator/tree/dev) is another project that extensively utilizes CARLANeT, although its documentation is not comprehensive.
+
+
+## Citation
+If you use the code or ideas in this repository for your research, please consider citing the following paper:
+
+    ```
+    @inproceedings{10136340,
+      author={Cislaghi, Valerio and Quadri, Christian and Mancuso, Vincenzo and Marsan, Marco Ajmone},
+      booktitle={2023 IEEE Vehicular Networking Conference (VNC)}, 
+      title={Simulation of Tele-Operated Driving over 5G Using CARLA and OMNeT++}, 
+      year={2023},
+      volume={},
+      number={},
+      pages={81-88},
+      doi={10.1109/VNC57357.2023.10136340}
+    }
+    ``` 
+
+## License
+CARLANeT is distributed under the MIT License. See LICENSE for more information.
