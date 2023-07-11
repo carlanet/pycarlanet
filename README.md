@@ -115,21 +115,16 @@ Replace `<carla-simulator-host>` and `<carla-port>` with the appropriate paramet
 Note: [ToD-simulator](https://github.com/connets/tod-simulator/tree/dev) is another project that extensively utilizes CARLANeT, although its documentation is not comprehensive.
 
 
-## Citation
-If you use the code or ideas in this repository for your research, please consider citing the following paper:
+## Disclaimer
 
-    ```
-    @inproceedings{10136340,
-      author={Cislaghi, Valerio and Quadri, Christian and Mancuso, Vincenzo and Marsan, Marco Ajmone},
-      booktitle={2023 IEEE Vehicular Networking Conference (VNC)}, 
-      title={Simulation of Tele-Operated Driving over 5G Using CARLA and OMNeT++}, 
-      year={2023},
-      volume={},
-      number={},
-      pages={81-88},
-      doi={10.1109/VNC57357.2023.10136340}
-    }
-    ``` 
+If you use this software or part of it for your research, please cite 
+our work:
+  
+V. Cislaghi, C. Quadri, V. Mancuso and M. A. Marsan, "Simulation of Tele-Operated Driving over 5G Using CARLA and OMNeT++," 2023 IEEE Vehicular Networking Conference (VNC), Istanbul, Turkiye, 2023, pp. 81-88, doi: [10.1109/VNC57357.2023.10136340](https://doi.org/10.1109/VNC57357.2023.10136340).
+
+If you include this software or part of it within your own software, 
+README and LICENSE files cannot be removed from it and must be included 
+in the root directory of your software package.
 
 ## License
 CARLANeT is distributed under the MIT License. See LICENSE for more information.
