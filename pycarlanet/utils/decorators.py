@@ -70,3 +70,12 @@ class DecoratorSingleton:
     def destroy(self):
         del self._instance
         self._instance = None
+
+
+def InstanceExist(cls):
+    def wrapper_method(method):
+        def validation(*args, **kwargs):
+            if cls._instance is None: raise Exception(f"Violated prerequisites of method '{method.__name__}' -> instance of singleton class '{cls.__class__.__name__}' do not exist")
+            return method(*args, **kwargs)
+        return validation
+    return wrapper_method
