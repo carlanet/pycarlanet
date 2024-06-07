@@ -1,8 +1,8 @@
-class BasicActorManager(abc.ABC):
+class BasicActorManager():
     #_agents = dict(int, ?actor)
 
     # INIT PHASE
-    def omnet_init_completed(self, message): ...
+    def omnet_init_completed(self, message): return
     
     # RUN PHASE
     #def before_world_tick(self, timestamp): ...

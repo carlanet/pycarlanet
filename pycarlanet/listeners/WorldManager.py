@@ -1,7 +1,7 @@
 import abc
 import enum
 from carla.libcarla import World
-from utils import InstanceExist
+from utils.decorators import InstanceExist
 from CarlaClient import CarlaClient
 
 class SimulatorStatus(enum.Enum):

@@ -1,12 +1,17 @@
 from pycarlanet.utils import DecoratorSingleton
 from pycarlanet import SimulatorStatus
-from listeners import WorldManager, ActorManager, AgentManager
+from listeners.WorldManager import WorldManager
+from listeners.ActorManager import ActorManager
+from listeners.AgentManager import AgentManager
+from listeners.BasicActorManager import BasicActorManager
+from listeners.BasicAgentManager import BasicAgentManager
+
 import abc
 import json
 import os
 import zmq
 
-from utils import InstanceExist
+from utils.decorators import InstanceExist
 
 class ImmutableMessage:
     _message: bytes
