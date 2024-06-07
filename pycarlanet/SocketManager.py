@@ -8,13 +8,19 @@ import zmq
 
 from utils import InstanceExist
 
+class ImmutableMessage:
+    _message: bytes
+    def __init__(self, msg): self._message = json.dumps(msg).encode('utf-8')
+    @property
+    def message(self): return json.loads(self._message.decode("utf-8"))
+
 @DecoratorSingleton
 class SocketManager:
     
     _listening_port: int
     _worldManager: WorldManager
-    _actorManager: ActorManager
-    _agentManager: AgentManager
+    _actorManager: ActorManager = BasicActorManager()
+    _agentManager: AgentManager = BasicAgentManager()
 
     def __init__(
         self,
@@ -28,14 +34,12 @@ class SocketManager:
     ):
         if listening_port is None or worldManager is None: raise Exception(f"Error initializing SocketManager listening_port and worldManager can't be None, listening_port={listening_port}, worldManager={worldManager}")
         self._listening_port = listening_port
-        #self._omnet_world_listener = omnet_world_listener
-        
         self._worldManager = worldManager
-        self._actorManager = actorManager
-        self._agentManager = agentManager
+
+        if actorManager is not None: self._actorManager = actorManager
+        if agentManager is not None: self._agentManager = agentManager
 
         self._message_handler: MessageHandlerState = None
-        #self._carlanet_actors = dict()
         self._log_messages = log_messages
         self._save_config_path = save_config_path
         self.socket_options = socket_options if socket_options else {}
@@ -46,9 +50,7 @@ class SocketManager:
         try:
             while not isinstance(self._message_handler, FinishedMessageHandlerState):
                 msg = self._receive_data_from_omnet()
-                print(f"msg from omnet {msg}")
                 answer = self._message_handler.handle_message(msg)
-                print(f"msg from carla {answer}")
                 self._send_data_to_omnet(answer)
             self._worldManager.simulation_finished(self._message_handler.simulator_status_code)
         except Exception as e:
@@ -70,13 +72,11 @@ class SocketManager:
         message = self.socket.recv()
         json_data = json.loads(message.decode("utf-8"))
         self.timestamp = json_data['timestamp']
-        if self._log_messages:
-            print(f'Received msg: {json_data}\n')
+        if self._log_messages: print(f'Received msg: {json_data}\n')
         return json_data
 
     def _send_data_to_omnet(self, answer):
-        if self._log_messages:
-            print(f'Sending msg: {answer}\n')
+        if self._log_messages: print(f'Sending msg: {answer}\n')
         self.socket.send(json.dumps(answer).encode('utf-8'))
 
     def set_message_handler_state(self, msg_handler_cls, *args):
@@ -126,52 +126,22 @@ class InitMessageHandlerState(MessageHandlerState):
         if not os.path.exists(_path): os.makedirs(_path)
         with open(os.path.join(_path, 'init.json'), 'w') as f: json.dump(message, f)
 
+
     @InstanceExist(SocketManager)
     def INIT(self, message):
-        self._save_config(message)
+        immutableMessage = ImmutableMessage(message)
+
+        self._save_config(immutableMessage.message)
         res = dict()
         res['message_type'] = 'INIT_COMPLETED'
 
-        sim_status, carla_world = SocketManager.instance._worldManager.omnet_init_completed(
-            run_id=message['run_id'],
-            carla_configuration=message['carla_configuration'],
-            user_defined=message['user_defined']
-        )
+        sim_status, carla_world = SocketManager.instance._worldManager.omnet_init_completed(message=immutableMessage.message)
+        SocketManager.instance._actorManager.omnet_init_completed(message=immutableMessage.message)
+        SocketManager.instance._agentManager.omnet_init_completed(message=immutableMessage.message)
 
-        if SocketManager.instance._actorManager is not None: SocketManager.instance._actorManager.omnet_init_completed(
-            run_id=message['run_id'],
-            carla_configuration=message['carla_configuration'],
-            user_defined=message['user_defined']
-        )
-
-        if SocketManager.instance._agentManager is not None: SocketManager.instance._agentManager.omnet_init_completed(
-            run_id=message['run_id'],
-            carla_configuration=message['carla_configuration'],
-            user_defined=message['user_defined']
-        )
-
-        # self.omnet_world_listener.omnet_init_completed(
-        #     run_id=message['run_id'],
-        #     carla_configuration=message['carla_configuration'],
-        #     user_defined=message['user_defined'])
-
-        # self._manager.carla_world = carla_world
-
-        #add omnet actors in carla
-        if SocketManager.instance._actorManager is not None: SocketManager.instance._actorManager.create_actors_from_omnet(message['moving_actors'])
-        # for static_carlanet_actor in message['moving_actors']:
-        #     actor_id = static_carlanet_actor['actor_id']
-        #     self._carlanet_actors[actor_id] = self.omnet_world_listener.actor_created(
-        #         actor_id,
-        #         static_carlanet_actor['actor_type'],
-        #         static_carlanet_actor['actor_configuration']
-        #     )
-
-        #res['initial_timestamp'] = self._manager.get_curr_sim_timestamp()
         res['initial_timestamp'] = SocketManager.instance._worldManager.get_elapsed_seconds()
         res['simulation_status'] = sim_status.value
-        #res['actor_positions'] = self._generate_carla_nodes_positions()
-        res['actor_positions'] = SocketManager.instance._actorManager._generate_carla_nodes_positions() if SocketManager.instance._actorManager is not None else []
+        res['actor_positions'] = SocketManager.instance._actorManager._generate_carla_nodes_positions()
 
         SocketManager.instance._worldManager.carla_init_completed()
 
@@ -185,26 +155,30 @@ class RunningMessageHandlerState(MessageHandlerState):
     def SIMULATION_STEP(self, message):
         res = dict()
         
-        #self.omnet_world_listener.before_world_tick(message['timestamp'])
         SocketManager.instance._worldManager.before_world_tick(message['timestamp'])
-        #if SocketManager.instance._actorManager is not None: SocketManager.instance._actorManager.before_world_tick(message['timestamp'])
-        #if SocketManager.instance._agentManager is not None: SocketManager.instance._agentManager.before_world_tick(message['timestamp'])
+        #TODO check if necessary _actorManager.before_world_tick, _agentManager.before_world_tick
+            #SocketManager.instance._actorManager.before_world_tick(message['timestamp'])
+            #SocketManager.instance._agentManager.before_world_tick(message['timestamp'])
 
-        
-        #self._manager.carla_world.tick()
         SocketManager.instance._worldManager.tick()
 
         res['message_type'] = 'UPDATED_POSITIONS'
         #sim_status = self.omnet_world_listener.carla_simulation_step(message['timestamp'])
         sim_status = SocketManager.instance._worldManager.after_world_tick(message['timestamp'])
+
+        #TODO check if necessary _actorManager.after_world_tick, _agentManager.after_world_tick
+            #SocketManager.instance._actorManager.after_world_tick(message['timestamp'])
+            #SocketManager.instance._agentManager.after_world_tick(message['timestamp'])
+        
         res['simulation_status'] = sim_status.value
         #res['actor_positions'] = self._generate_carla_nodes_positions()
-        res['actor_positions'] = SocketManager.instance._actorManager._generate_carla_nodes_positions() if SocketManager.instance._actorManager is not None else []
+        res['actor_positions'] = SocketManager.instance._actorManager._generate_carla_nodes_positions()
         if sim_status != SimulatorStatus.RUNNING: SocketManager.instance.set_message_handler_state(FinishedMessageHandlerState, sim_status)
         return res
 
     def GENERIC_MESSAGE(self, message):
         res = dict()
+        print(f"generic message handle {message}")
         # res['message_type'] = 'GENERIC_RESPONSE'
         # sim_status, user_defined_response = self.omnet_world_listener.generic_message(message['timestamp'], message[
         #     'user_defined'])
@@ -221,3 +195,4 @@ class FinishedMessageHandlerState(MessageHandlerState):
     def __init__(self, simulator_status_code: SimulatorStatus):
         super().__init__()
         self.simulator_status_code = simulator_status_code
+

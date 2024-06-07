@@ -1,20 +1,23 @@
 import abc
-import carla
+from typing import Dict
 
+import carla
 from CarlanetActor import CarlanetActor
 
 class ActorManager(abc.ABC):
-    _carlanet_actors = dict()
+    _carlanet_actors: Dict[str, CarlanetActor] = dict()
 
     # INIT PHASE
-    def omnet_init_completed(self, run_id, carla_configuration, user_defined):
+    def omnet_init_completed(self, message):
         """
         After Omnet, WorldManager INIT
-        :param run_id: id corresponding to the one in OMNeT++
-        :param carla_configuration:
-        :param user_defined:
+        :param message: init message fro OMNeT++
         """
-        ...
+        #:param run_id: id corresponding to the one in OMNeT++
+        #:param carla_configuration:
+        #:param user_defined:
+        self.create_actors_from_omnet(message['moving_actors'])
+        #create carla actors from configuration file
     
     def create_actors_from_omnet(self, actors):
         """
@@ -40,18 +43,18 @@ class ActorManager(abc.ABC):
         ...
 
     # UTILITIES
-    def create_actors_from_carla(self, actor:carla.Actor):
+    def add_carla_actor_to_omnet(self, actor:carla.Actor):
         """
         Called to add a carla actor to the list and communicate in next step to omnet
-        :param actor_id:
-        :param actor_type:
-        :param actor_config:
-        :return: new actor created from carlaWorld
+        :param actor:carla.Actor
         """
-        if actor.id in self._carlanet_actors:
-            print(f"ActorManager -> create_actors_from_carla 'aacotr with id {actor.id} already exists'")
-            return
-        self._carlanet_actors[actor.id] = CarlanetActor(actor, True)
+        print(f"add_carla_actor_to_omnet, id {actor.id} -> {actor}")
+        #TODO check if is correct and uncomment self._carlanet_actors[actor.id] = CarlanetActor(actor, True) 
+
+        #TODO check if necessary
+        #if actor.id in self._carlanet_actors:
+        #    print(f"ActorManager -> create_actors_from_carla {actor} with id {actor.id} already exists'")
+        #    return
 
     def remove_actor(self, actor_id: str):
         """

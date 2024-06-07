@@ -2,10 +2,9 @@ import abc
 import enum
 
 class AgentManager(abc.ABC):
-    #_agents = dict(int, ?actor)
 
     # INIT PHASE
-    def omnet_init_completed(self, run_id, carla_configuration, user_defined):
+    def omnet_init_completed(self, message):
         """
         After Omnet, WorldManager INIT
         :param run_id: id corresponding to the one in OMNeT++

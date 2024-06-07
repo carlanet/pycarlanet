@@ -12,14 +12,15 @@ class SimulatorStatus(enum.Enum):
 
 class WorldManager(abc.ABC):
     # INIT PHASE
-    def omnet_init_completed(self, run_id, carla_configuration, user_defined) -> (SimulatorStatus, World):
+    def omnet_init_completed(self, message) -> (SimulatorStatus, World):
         """
         After Omnet INIT
-        :param run_id: id corresponding to the one in OMNeT++
-        :param carla_configuration:
-        :param user_defined:
+        :param message: init message fro OMNeT++
         :return: current carla world, current simulator status
         """
+        #run_id=message['run_id'],
+        #carla_configuration=message['carla_configuration'],
+        #user_defined=message['user_defined']
         return SimulatorStatus.RUNNING, self.world
     
     def carla_init_completed(self):
