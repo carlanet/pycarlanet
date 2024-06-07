@@ -6,3 +6,5 @@ build
 dist
 pycarlanet.egg-info
 **/tmp
+/pycarlanet/fakeOmnet.py
+/pycarlanet/test.py
