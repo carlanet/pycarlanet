@@ -11,6 +11,13 @@ class SimulatorStatus(enum.Enum):
     FINISHED_ERROR = -1
 
 class WorldManager(abc.ABC):
+
+    _synchronousMode: bool
+    _fixed_delta_seconds = 0.01
+
+    def __init__(self, synchronousMode: bool):
+        self._synchronousMode = synchronousMode
+
     # INIT PHASE
     def omnet_init_completed(self, message) -> (SimulatorStatus, World):
         """
@@ -21,6 +28,12 @@ class WorldManager(abc.ABC):
         #run_id=message['run_id'],
         #carla_configuration=message['carla_configuration'],
         #user_defined=message['user_defined']
+
+        try: self._fixed_delta_seconds = message['carla_configuration']['carla_timestep']
+        except: ...
+
+        if self._synchronousMode: self.setSynchronous_fixed_delta_seconds()
+
         return SimulatorStatus.RUNNING, self.world
     
     def carla_init_completed(self):
@@ -76,4 +89,12 @@ class WorldManager(abc.ABC):
     def load_world(self, worldName):
         #CarlaClient.instance._client.load_world("Town05")
         CarlaClient.instance.client.load_world(worldName)
-        ...
+        if self._synchronousMode: self.setSynchronous_fixed_delta_seconds()
+
+    def setSynchronous_fixed_delta_seconds(self):
+        settings = self.world.get_settings()
+        settings.synchronous_mode = True
+        settings.fixed_delta_seconds = True
+        #settings.no_rendering_mode = False
+        settings.fixed_delta_seconds = self._fixed_delta_seconds
+        self.world.apply_settings(settings)
