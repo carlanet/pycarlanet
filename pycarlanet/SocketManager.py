@@ -1,10 +1,8 @@
 from pycarlanet.utils import DecoratorSingleton
 from pycarlanet import SimulatorStatus
 from listeners.WorldManager import WorldManager
-from listeners.ActorManager import ActorManager
-from listeners.AgentManager import AgentManager
-from listeners.BasicActorManager import BasicActorManager
-from listeners.BasicAgentManager import BasicAgentManager
+from listeners.ActorManager import ActorManager, BasicActorManager
+from listeners.AgentManager import AgentManager, BasicAgentManager
 
 import abc
 import json
