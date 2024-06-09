@@ -1,9 +1,7 @@
 import abc
-
 import carla
 
 from pycarlanet.utils import preconditions
-
 
 # Pattern decorator for carla.Actor
 # NOTE: you can call each method of carla.Actor on this class, but if you want to pass an object of type
