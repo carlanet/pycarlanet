@@ -1,6 +1,4 @@
 import abc
-import enum
-
 
 class BasicAgentManager():
     #_agents = dict(int, ?actor)

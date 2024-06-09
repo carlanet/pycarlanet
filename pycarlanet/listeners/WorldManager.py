@@ -1,14 +1,11 @@
 import abc
-import enum
-from carla.libcarla import World
-from utils.decorators import InstanceExist
-from CarlaClient import CarlaClient
+from typing import List
 
-class SimulatorStatus(enum.Enum):
-    RUNNING = 0
-    FINISHED_OK = 1
-    FINISHED_TIME_LIMIT = 2
-    FINISHED_ERROR = -1
+from carla.libcarla import World
+
+from pycarlanet.utils import InstanceExist
+from pycarlanet import CarlaClient
+from pycarlanet.enum import CarlaMaplayers, SimulatorStatus
 
 class WorldManager(abc.ABC):
 
@@ -86,9 +83,9 @@ class WorldManager(abc.ABC):
         self.world.tick()
 
     @InstanceExist(CarlaClient)
-    def load_world(self, worldName):
-        #CarlaClient.instance._client.load_world("Town05")
+    def load_world(self, worldName, layer_to_unload: List[CarlaMaplayers] =[]):
         CarlaClient.instance.client.load_world(worldName)
+        for layer in layer_to_unload: self.world.unload_map_layer(layer.value)
         if self._synchronousMode: self.setSynchronous_fixed_delta_seconds()
 
     def setSynchronous_fixed_delta_seconds(self):

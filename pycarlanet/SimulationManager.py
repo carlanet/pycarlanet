@@ -1,6 +1,7 @@
-from pycarlanet.utils import DecoratorSingleton
 import psutil
 import signal
+
+from pycarlanet.utils import DecoratorSingleton
 
 @DecoratorSingleton
 class SimulationManager:

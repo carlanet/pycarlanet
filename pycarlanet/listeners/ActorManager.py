@@ -1,9 +1,7 @@
 import abc
 from typing import Dict
-
 import carla
-from CarlanetActor import CarlanetActor
-
+from pycarlanet import CarlanetActor
 
 class BasicActorManager():
     #_agents = dict(int, ?actor)
@@ -61,7 +59,8 @@ class ActorManager(abc.ABC):
         :param actor:carla.Actor
         """
         print(f"add_carla_actor_to_omnet, id {actor.id} -> {actor}")
-        #TODO check if is correct and uncomment self._carlanet_actors[actor.id] = CarlanetActor(actor, True) 
+        #TODO check if is correct and uncomment
+        self._carlanet_actors[actor.id] = CarlanetActor(actor, True) 
 
         #TODO check if necessary
         #if actor.id in self._carlanet_actors:

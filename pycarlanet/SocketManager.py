@@ -1,15 +1,14 @@
-from pycarlanet.utils import DecoratorSingleton
-from pycarlanet import SimulatorStatus
-from listeners.WorldManager import WorldManager
-from listeners.ActorManager import ActorManager, BasicActorManager
-from listeners.AgentManager import AgentManager, BasicAgentManager
-
 import abc
 import json
 import os
 import zmq
 
-from utils.decorators import InstanceExist
+from pycarlanet.utils import DecoratorSingleton, InstanceExist
+from pycarlanet.enum import SimulatorStatus
+from pycarlanet.listeners import WorldManager
+from pycarlanet.listeners import ActorManager,BasicActorManager
+from pycarlanet.listeners import AgentManager, BasicAgentManager
+
 
 class ImmutableMessage:
     _message: bytes
@@ -166,7 +165,6 @@ class RunningMessageHandlerState(MessageHandlerState):
         SocketManager.instance._worldManager.tick()
 
         res['message_type'] = 'UPDATED_POSITIONS'
-        #sim_status = self.omnet_world_listener.carla_simulation_step(message['timestamp'])
         sim_status = SocketManager.instance._worldManager.after_world_tick(message['timestamp'])
 
         #TODO check if necessary _actorManager.after_world_tick, _agentManager.after_world_tick
@@ -174,7 +172,6 @@ class RunningMessageHandlerState(MessageHandlerState):
             #SocketManager.instance._agentManager.after_world_tick(message['timestamp'])
         
         res['simulation_status'] = sim_status.value
-        #res['actor_positions'] = self._generate_carla_nodes_positions()
         res['actor_positions'] = SocketManager.instance._actorManager._generate_carla_nodes_positions()
         if sim_status != SimulatorStatus.RUNNING: SocketManager.instance.set_message_handler_state(FinishedMessageHandlerState, sim_status)
         return res
