@@ -1,6 +1,7 @@
 from carla.libcarla import World
-from pycarlanet.utils import DecoratorSingleton
 import carla
+
+from pycarlanet.utils import DecoratorSingleton
 
 @DecoratorSingleton
 class CarlaClient():
@@ -9,7 +10,7 @@ class CarlaClient():
     _port: int = None
     _client: carla.Client = None
 
-    def __init__(self, host, port):
+    def __init__(self, host: str, port: int):
         self._host = host
         self._port = port
 
