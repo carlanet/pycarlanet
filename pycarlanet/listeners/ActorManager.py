@@ -60,7 +60,7 @@ class ActorManager(abc.ABC):
         """
         print(f"add_carla_actor_to_omnet, id {actor.id} -> {actor}")
         #TODO check if is correct and uncomment
-        self._carlanet_actors[actor.id] = CarlanetActor(actor, True) 
+        self._carlanet_actors[f'{actor.id}'] = CarlanetActor(actor, True) 
 
         #TODO check if necessary
         #if actor.id in self._carlanet_actors:
