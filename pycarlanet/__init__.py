@@ -1,4 +1,4 @@
 from pycarlanet.CarlaClient import CarlaClient
-from pycarlanet.CarlanetActor import CarlanetActor
+from pycarlanet.CarlanetActor import CarlanetActor, ActorType
 from pycarlanet.SimulationManager import SimulationManager
 from pycarlanet.SocketManager import SocketManager
