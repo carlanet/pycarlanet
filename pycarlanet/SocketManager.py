@@ -151,7 +151,7 @@ class RunningMessageHandlerState(MessageHandlerState):
         sim_status, user_defined_response = SocketManager.instance._worldManager.generic_message(message['timestamp'], message['user_defined'])
 
         res = dict()
-        res['message_type'] = 'GENERIC_RESPONSE'
+        res['message_type'] = 'WORLD_GENERIC_RESPONSE'
         res['simulation_status'] = sim_status.value
         res['user_defined'] = user_defined_response
 
@@ -165,7 +165,7 @@ class RunningMessageHandlerState(MessageHandlerState):
         sim_status, user_defined_response = SocketManager.instance._actorManager.generic_message(message['timestamp'], message['user_defined'])
 
         res = dict()
-        res['message_type'] = 'GENERIC_RESPONSE'
+        res['message_type'] = 'ACTOR_GENERIC_RESPONSE'
         res['simulation_status'] = sim_status.value
         res['user_defined'] = user_defined_response
 
@@ -179,7 +179,7 @@ class RunningMessageHandlerState(MessageHandlerState):
         sim_status, user_defined_response = SocketManager.instance._agentManager.generic_message(message['timestamp'], message['user_defined'])
 
         res = dict()
-        res['message_type'] = 'GENERIC_RESPONSE'
+        res['message_type'] = 'AGENT_GENERIC_RESPONSE'
         res['simulation_status'] = sim_status.value
         res['user_defined'] = user_defined_response
 
