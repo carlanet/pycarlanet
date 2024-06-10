@@ -20,7 +20,113 @@ You can install **pyCARLANeT** directly from [pypi](https://pypi.org/project/pyc
 pip install pycarlanet
 ```
 
-## Usage
+## Components by packages
+pycarlanet
+- CarlaClient: connection between pyCARLANet and Carla Server
+  ```python
+  CarlaClient(host=<'carlaServerHost': str>, port=<CarlaServerPort: int>)
+  # example
+  # CarlaClient(host='localhost', port=2000)
+  ```
+- SocketManager: act as dispatcher for incoming message from OMNet, listening_port is the port number used by ZeroMQ for communication between the two sides of CARLANeT, which must be the same in [CARLANeTpp]
+  ```python
+  SocketManager(
+    listening_port=<omnetSocketPort: int>,
+    worldManager=<WorldManager_instance:  WorldManager>,
+  )
+  # example
+  # SocketManager(listening_port=5555, worldManager=wManager(synchronousMode=True))
+  ```
+- CarlanetActor
+
+- ActorType
+- SimulationManager
+
+
+pycarlanet.utils: please read utils/README.md
+- closure
+
+- preconditions
+- synchronized
+- MetaClassSingleton
+- DecoratorSingleton
+- InstanceExist
+
+pycarlanet.listeners
+- WorldManager: inherits from this class to manage the world 
+
+- ActorManager: inherits from this class to manage the actors that live both in Carla and OMNet
+- BasicActorManager #internal implementation, do not consider
+- AgentManager: inherits from this class to manage the agents
+- BasicAgentManager #internal implementation, do not consider
+
+pycarlanet.enum
+- SimulatorStatus
+
+- CarlaMaplayers
+
+## messages pyCARLANeT <--> CARLANeTpp
+- pyCARLANeT --> CARLANeTpp
+  ```
+  a
+  ```
+- pyCARLANeT <-- CARLANeTpp
+  ```
+  a
+  ```
+
+
+## Basic Usage
+###  [OPTION_1] run carla server simulator externally
+- start the carla Server
+- start the code above
+  ```python
+  class wManager(WorldManager):
+      def omnet_init_completed(self, message) -> (SimulatorStatus, World):
+          super().omnet_init_completed(message=message)
+          return SimulatorStatus.RUNNING, self.world
+
+      def after_world_tick(self, timestamp) -> SimulatorStatus:
+          if timestamp > 20: return SimulatorStatus.FINISHED_OK
+          else: return SimulatorStatus.RUNNING
+
+  #HERE CODE TO MANAGE SIMULATOR
+  CarlaClient(host=<'carlaServerHost': str>, port=<CarlaServerPort: int>) #example host='localhost', port=2000
+
+  SocketManager(
+    listening_port=<omnetSocketPort: int>, #example 5555
+    worldManager=wManager(synchronousMode=True),
+    log_messages=True
+  )
+  SocketManager.instance.start_socket()
+  ```
+### [OPTION_2] include run of carla server
+- start the code above
+  ```python
+  class wManager(WorldManager):
+      def omnet_init_completed(self, message) -> (SimulatorStatus, World):
+          super().omnet_init_completed(message=message)
+          return SimulatorStatus.RUNNING, self.world
+
+      def after_world_tick(self, timestamp) -> SimulatorStatus:
+          if timestamp > 20: return SimulatorStatus.FINISHED_OK
+          else: return SimulatorStatus.RUNNING
+
+  SimulationManager(carla_sh_path=<'/path/to/CARLA_0.9.15/CarlaUE4.sh': str>)
+  SimulationManager.instance.reload_simulator()
+  time.sleep(5)
+  CarlaClient(host=<'carlaServerHost': str>, port=<CarlaServerPort: int>) #example host='localhost', port=2000
+
+  SocketManager(
+    listening_port=<omnetSocketPort: int>, #example 5555
+    worldManager=wManager(synchronousMode=True),
+    log_messages=True
+  )
+  SocketManager.instance.start_socket()
+  ```
+
+
+<!-- ## Usage
 To use the library, you must have an instance of CARLA simulator already active.
 
 First, create an instance of the **\`CarlanetManager\`** class:
@@ -114,6 +220,7 @@ Replace `<carla-simulator-host>` and `<carla-port>` with the appropriate paramet
 
 Note: [ToD-simulator](https://github.com/connets/tod-simulator/tree/dev) is another project that extensively utilizes CARLANeT, although its documentation is not comprehensive.
 
+-->
 
 ## Disclaimer
 
