@@ -1,13 +1,6 @@
 import abc
 
-class BasicAgentManager():
-    #_agents = dict(int, ?actor)
-
-    # INIT PHASE
-    def omnet_init_completed(self, message): return
-    
-    # RUN PHASE
-    #def before_world_tick(self, timestamp): ...
+from pycarlanet.enum import SimulatorStatus
 
 class AgentManager(abc.ABC):
 
@@ -39,10 +32,19 @@ class AgentManager(abc.ABC):
         """
         ...
     
-    def generic_message(timestamp, message) -> (SimulatorStatus, dict):
+    def generic_message(self, timestamp, message) -> (SimulatorStatus, dict):
         """
         :param timestamp:
         :param message:
         :return: (current simulator status, dict contained custom parameters not None)
         """
         ...
+
+class BasicAgentManager(AgentManager):
+    #_agents = dict(int, ?actor)
+
+    # INIT PHASE
+    def omnet_init_completed(self, message): return
+    
+    # RUN PHASE
+    #def before_world_tick(self, timestamp): ...

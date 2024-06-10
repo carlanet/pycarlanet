@@ -3,9 +3,10 @@ from typing import List
 
 from carla.libcarla import World
 
+from pycarlanet.enum import CarlaMaplayers, SimulatorStatus
 from pycarlanet.utils import InstanceExist
 from pycarlanet import CarlaClient
-from pycarlanet.enum import CarlaMaplayers, SimulatorStatus
+
 
 class WorldManager(abc.ABC):
 
@@ -50,7 +51,7 @@ class WorldManager(abc.ABC):
         """
         ...
 
-    def generic_message(timestamp, message) -> (SimulatorStatus, dict):
+    def generic_message(self, timestamp, message) -> (SimulatorStatus, dict):
         """
         :param timestamp:
         :param message:

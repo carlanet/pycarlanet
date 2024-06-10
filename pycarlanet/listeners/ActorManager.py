@@ -1,17 +1,10 @@
 import abc
 from typing import Dict
 import carla
+
+from pycarlanet.enum import SimulatorStatus
 from pycarlanet import CarlanetActor, ActorType
 
-class BasicActorManager():
-    #_agents = dict(int, ?actor)
-
-    # INIT PHASE
-    def omnet_init_completed(self, message): return
-    
-    # RUN PHASE
-    def before_world_tick(self, timestamp): return
-    def _generate_carla_nodes_positions(self): return []
 
 class ActorManager(abc.ABC):
     _carlanet_actors: Dict[str, CarlanetActor] = dict()
@@ -45,7 +38,7 @@ class ActorManager(abc.ABC):
         """
         ...
 
-    def generic_message(timestamp, message) -> (SimulatorStatus, dict):
+    def generic_message(self, timestamp, message) -> (SimulatorStatus, dict):
         """
         :param timestamp:
         :param message:
@@ -95,3 +88,13 @@ class ActorManager(abc.ABC):
             position['actor_type'] = actor.actor_type
             nodes_positions.append(position)
         return nodes_positions
+
+class BasicActorManager(ActorManager):
+    #_agents = dict(int, ?actor)
+
+    # INIT PHASE
+    def omnet_init_completed(self, message): return
+    
+    # RUN PHASE
+    def before_world_tick(self, timestamp): return
+    def _generate_carla_nodes_positions(self): return []
