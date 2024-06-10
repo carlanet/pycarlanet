@@ -16,7 +16,7 @@ class WorldManager(abc.ABC):
         self._synchronousMode = synchronousMode
 
     # INIT PHASE
-    def omnet_init_completed(self, message) -> (SimulatorStatus, World):
+    def omnet_init_completed(self, message) -> SimulatorStatus:
         """
         After Omnet INIT
         :param message: init message fro OMNeT++
@@ -31,14 +31,10 @@ class WorldManager(abc.ABC):
 
         if self._synchronousMode: self.setSynchronous_fixed_delta_seconds()
 
-        return SimulatorStatus.RUNNING, self.world
-    
-    def carla_init_completed(self):
-        """Called when the initialization of CARLA World is finished"""
-        ...
+        return SimulatorStatus.RUNNING
 
     # RUN PHASE
-    def before_world_tick(self, timestamp) -> None:
+    def before_world_tick(self, timestamp):
         """
         Method called before a world tick called by OMNeT++
         :param timestamp
@@ -52,7 +48,15 @@ class WorldManager(abc.ABC):
         :param timestamp
         :return: current simulator status
         """
-        return SimulatorStatus.FINISHED_OK
+        ...
+
+    def generic_message(timestamp, message) -> (SimulatorStatus, dict):
+        """
+        :param timestamp:
+        :param message:
+        :return: (current simulator status, dict contained custom parameters not None)
+        """
+        ...
 
     # FINISH/ERROR PHASE
     def simulation_finished(self, status_code: SimulatorStatus):

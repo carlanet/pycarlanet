@@ -23,10 +23,26 @@ class AgentManager(abc.ABC):
         ...
     
     # RUN PHASE
-    def before_world_tick(self, timestamp) -> None:
+    def before_world_tick(self, timestamp):
         """
         Method called before a world tick called by OMNeT++
         :param timestamp
         :return: current simulator status
+        """
+        ...
+    
+    def after_world_tick(self, timestamp):
+        """
+        Method called after a world tick called by OMNeT++
+        :param timestamp
+        :return: current simulator status
+        """
+        ...
+    
+    def generic_message(timestamp, message) -> (SimulatorStatus, dict):
+        """
+        :param timestamp:
+        :param message:
+        :return: (current simulator status, dict contained custom parameters not None)
         """
         ...

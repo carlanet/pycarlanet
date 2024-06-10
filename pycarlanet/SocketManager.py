@@ -85,42 +85,15 @@ class SocketManager:
         self._message_handler = msg_handler_cls(*args)
     
 class MessageHandlerState(abc.ABC):
-    @InstanceExist(SocketManager)
-    def __init__(self):
-        #self.SocketManager = carlanet_manager
-        #self.omnet_world_listener: CarlanetEventListener = self._manager._omnet_world_listener
-        #self._carlanet_actors = self._manager._carlanet_actors
-        ...
-
     def handle_message(self, message):
         message_type = message['message_type']
         if hasattr(self, message_type):
             meth = getattr(self, message_type)
-            print(f"handle_message {message_type}")
+            #print(f"handle_message {message_type}")
             return meth(message)
         raise RuntimeError(f"""I'm in the following state: {self.__class__.__name__} and I don't know how to handle {message['message_type']} message""")
 
-    # def _generate_carla_nodes_positions(self):
-    #     nodes_positions = []
-    #     # for actor_id, actor in self._carlanet_actors.items():
-    #     #     transform: carla.Transform = actor.get_transform()
-    #     #     velocity: carla.Vector3D = actor.get_velocity()
-    #     #     position = dict()
-    #     #     position['actor_id'] = actor_id
-    #     #     position['position'] = [transform.location.x, transform.location.y, transform.location.z]
-    #     #     position['rotation'] = [transform.rotation.pitch, transform.rotation.yaw, transform.rotation.roll]
-    #     #     position['velocity'] = [velocity.x, velocity.y, velocity.z]
-    #     #     position['is_net_active'] = actor.alive
-    #     #     nodes_positions.append(position)
-    #     return nodes_positions
-
-
 class InitMessageHandlerState(MessageHandlerState):
-    @InstanceExist(SocketManager)
-    def __init__(self):
-        super().__init__()
-        #self._save_config_path = SocketManager.instance._save_config_path
-
     @InstanceExist(SocketManager)
     def _save_config(self, message):
         if SocketManager.instance._save_config_path is None: return
@@ -134,18 +107,16 @@ class InitMessageHandlerState(MessageHandlerState):
         immutableMessage = ImmutableMessage(message)
 
         self._save_config(immutableMessage.message)
-        res = dict()
-        res['message_type'] = 'INIT_COMPLETED'
 
-        sim_status, carla_world = SocketManager.instance._worldManager.omnet_init_completed(message=immutableMessage.message)
+        sim_status = SocketManager.instance._worldManager.omnet_init_completed(message=immutableMessage.message)
         SocketManager.instance._actorManager.omnet_init_completed(message=immutableMessage.message)
         SocketManager.instance._agentManager.omnet_init_completed(message=immutableMessage.message)
 
+        res = dict()
+        res['message_type'] = 'INIT_COMPLETED'
         res['initial_timestamp'] = SocketManager.instance._worldManager.get_elapsed_seconds()
         res['simulation_status'] = sim_status.value
         res['actor_positions'] = SocketManager.instance._actorManager._generate_carla_nodes_positions()
-
-        SocketManager.instance._worldManager.carla_init_completed()
 
         if sim_status == SimulatorStatus.RUNNING: SocketManager.instance.set_message_handler_state(RunningMessageHandlerState)
 
@@ -158,38 +129,63 @@ class RunningMessageHandlerState(MessageHandlerState):
         res = dict()
         
         SocketManager.instance._worldManager.before_world_tick(message['timestamp'])
-        #TODO check if necessary _actorManager.before_world_tick, _agentManager.before_world_tick
-            #SocketManager.instance._actorManager.before_world_tick(message['timestamp'])
-            #SocketManager.instance._agentManager.before_world_tick(message['timestamp'])
+        SocketManager.instance._actorManager.before_world_tick(message['timestamp'])
+        SocketManager.instance._agentManager.before_world_tick(message['timestamp'])
 
         SocketManager.instance._worldManager.tick()
 
-        res['message_type'] = 'UPDATED_POSITIONS'
         sim_status = SocketManager.instance._worldManager.after_world_tick(message['timestamp'])
-
-        #TODO check if necessary _actorManager.after_world_tick, _agentManager.after_world_tick
-            #SocketManager.instance._actorManager.after_world_tick(message['timestamp'])
-            #SocketManager.instance._agentManager.after_world_tick(message['timestamp'])
+        SocketManager.instance._actorManager.after_world_tick(message['timestamp'])
+        SocketManager.instance._agentManager.after_world_tick(message['timestamp'])
         
+
+        res['message_type'] = 'UPDATED_POSITIONS'
         res['simulation_status'] = sim_status.value
         res['actor_positions'] = SocketManager.instance._actorManager._generate_carla_nodes_positions()
         if sim_status != SimulatorStatus.RUNNING: SocketManager.instance.set_message_handler_state(FinishedMessageHandlerState, sim_status)
         return res
 
-    def GENERIC_MESSAGE(self, message):
+    @InstanceExist(SocketManager)
+    def WORLD_GENERIC_MESSAGE(self, message):
+
+        sim_status, user_defined_response = SocketManager.instance._worldManager.generic_message(message['timestamp'], message['user_defined'])
+
         res = dict()
-        print(f"generic message handle {message}")
-        # res['message_type'] = 'GENERIC_RESPONSE'
-        # sim_status, user_defined_response = self.omnet_world_listener.generic_message(message['timestamp'], message[
-        #     'user_defined'])
+        res['message_type'] = 'GENERIC_RESPONSE'
+        res['simulation_status'] = sim_status.value
+        res['user_defined'] = user_defined_response
 
-        # res['simulation_status'] = sim_status.value
-        # res['user_defined'] = user_defined_response
+        if sim_status != SimulatorStatus.RUNNING: self._manager.set_message_handler_state(FinishedMessageHandlerState, sim_status)
+        
+        return res
+    
+    @InstanceExist(SocketManager)
+    def ACTOR_GENERIC_MESSAGE(self, message):
 
-        # if sim_status != SimulatorStatus.RUNNING:
-        #     self._manager.set_message_handler_state(FinishedMessageHandlerState, sim_status)
+        sim_status, user_defined_response = SocketManager.instance._actorManager.generic_message(message['timestamp'], message['user_defined'])
+
+        res = dict()
+        res['message_type'] = 'GENERIC_RESPONSE'
+        res['simulation_status'] = sim_status.value
+        res['user_defined'] = user_defined_response
+
+        if sim_status != SimulatorStatus.RUNNING: self._manager.set_message_handler_state(FinishedMessageHandlerState, sim_status)
+        
         return res
 
+    @InstanceExist(SocketManager)
+    def AGENT_GENERIC_MESSAGE(self, message):
+
+        sim_status, user_defined_response = SocketManager.instance._agentManager.generic_message(message['timestamp'], message['user_defined'])
+
+        res = dict()
+        res['message_type'] = 'GENERIC_RESPONSE'
+        res['simulation_status'] = sim_status.value
+        res['user_defined'] = user_defined_response
+
+        if sim_status != SimulatorStatus.RUNNING: self._manager.set_message_handler_state(FinishedMessageHandlerState, sim_status)
+        
+        return res
 
 class FinishedMessageHandlerState(MessageHandlerState):
     def __init__(self, simulator_status_code: SimulatorStatus):

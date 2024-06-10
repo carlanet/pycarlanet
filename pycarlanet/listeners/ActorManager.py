@@ -1,7 +1,7 @@
 import abc
 from typing import Dict
 import carla
-from pycarlanet import CarlanetActor
+from pycarlanet import CarlanetActor, ActorType
 
 class BasicActorManager():
     #_agents = dict(int, ?actor)
@@ -10,8 +10,7 @@ class BasicActorManager():
     def omnet_init_completed(self, message): return
     
     # RUN PHASE
-    #def before_world_tick(self, timestamp): ...
-
+    def before_world_tick(self, timestamp): return
     def _generate_carla_nodes_positions(self): return []
 
 class ActorManager(abc.ABC):
@@ -21,14 +20,40 @@ class ActorManager(abc.ABC):
     def omnet_init_completed(self, message):
         """
         After Omnet, WorldManager INIT
-        :param message: init message fro OMNeT++
+        :param message: init message from OMNeT++
         """
         #:param run_id: id corresponding to the one in OMNeT++
         #:param carla_configuration:
         #:param user_defined:
         self.create_actors_from_omnet(message['moving_actors'])
         #create carla actors from configuration file
+
+    # RUN PHASE
+    def before_world_tick(self, timestamp):
+        """
+        Method called before a world tick called by OMNeT++
+        :param timestamp
+        :return: 
+        """
+        ...
     
+    def after_world_tick(self, timestamp):
+        """
+        Method called after a world tick called by OMNeT++
+        :param timestamp
+        :return: current simulator status
+        """
+        ...
+
+    def generic_message(timestamp, message) -> (SimulatorStatus, dict):
+        """
+        :param timestamp:
+        :param message:
+        :return: (current simulator status, dict contained custom parameters not None)
+        """
+        ...
+
+    # UTILITIES
     def create_actors_from_omnet(self, actors):
         """
         Called at the beginning of the simulation, OMNeT says which actors it has and communicate
@@ -38,34 +63,15 @@ class ActorManager(abc.ABC):
         :param actor_config:
         :return: new actor created from carlaWorld
         """
-        #TODO
-        print(len(actors))
-        for actor in actors: print(actor)
-        #self._carlanet_actors[actor_id] = CarlanetActor(carla.Actor())
-    
-    # RUN PHASE
-    def before_world_tick(self, timestamp) -> None:
-        """
-        Method called before a world tick called by OMNeT++
-        :param timestamp
-        :return: current simulator status
-        """
         ...
-
-    # UTILITIES
-    def add_carla_actor_to_omnet(self, actor:carla.Actor):
+    
+    def add_carla_actor_to_omnet(self, actor:carla.Actor, actor_type: ActorType):
         """
         Called to add a carla actor to the list and communicate in next step to omnet
         :param actor:carla.Actor
+        :param actor_type: ActorType
         """
-        print(f"add_carla_actor_to_omnet, id {actor.id} -> {actor}")
-        #TODO check if is correct and uncomment
-        self._carlanet_actors[f'{actor.id}'] = CarlanetActor(actor, True) 
-
-        #TODO check if necessary
-        #if actor.id in self._carlanet_actors:
-        #    print(f"ActorManager -> create_actors_from_carla {actor} with id {actor.id} already exists'")
-        #    return
+        self._carlanet_actors[f'{actor.id}'] = CarlanetActor(actor, actor_type) 
 
     def remove_actor(self, actor_id: str):
         """
@@ -78,13 +84,14 @@ class ActorManager(abc.ABC):
     def _generate_carla_nodes_positions(self):
         nodes_positions = []
         for actor_id, actor in self._carlanet_actors.items():
-            transform: carla.Transform = actor.get_transform()
-            velocity: carla.Vector3D = actor.get_velocity()
+            transform: carla.Transform = actor.carla_actor.get_transform()
+            velocity: carla.Vector3D = actor.carla_actor.get_velocity()
             position = dict()
             position['actor_id'] = actor_id
             position['position'] = [transform.location.x, transform.location.y, transform.location.z]
             position['rotation'] = [transform.rotation.pitch, transform.rotation.yaw, transform.rotation.roll]
             position['velocity'] = [velocity.x, velocity.y, velocity.z]
-            position['is_net_active'] = actor.alive
+            #position['is_net_active'] = actor.alive
+            position['actor_type'] = actor.actor_type
             nodes_positions.append(position)
         return nodes_positions
