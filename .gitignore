@@ -7,4 +7,3 @@ dist
 pycarlanet.egg-info
 **/tmp
 /.venv
-/example
