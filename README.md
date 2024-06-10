@@ -90,7 +90,6 @@ pycarlanet.enum
           if timestamp > 20: return SimulatorStatus.FINISHED_OK
           else: return SimulatorStatus.RUNNING
 
-  #HERE CODE TO MANAGE SIMULATOR
   CarlaClient(host=<'carlaServerHost': str>, port=<CarlaServerPort: int>) #example host='localhost', port=2000
 
   SocketManager(
