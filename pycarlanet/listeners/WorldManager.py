@@ -11,10 +11,13 @@ from pycarlanet import CarlaClient
 class WorldManager(abc.ABC):
 
     _synchronousMode: bool
+    _renderingMode: bool
     _fixed_delta_seconds = 0.01
 
-    def __init__(self, synchronousMode: bool):
+    def __init__(self, synchronousMode: bool, renderingMode: bool):
         self._synchronousMode = synchronousMode
+        self._renderingMode = renderingMode
+
 
     # INIT PHASE
     def omnet_init_completed(self, message) -> SimulatorStatus:
@@ -92,11 +95,17 @@ class WorldManager(abc.ABC):
         CarlaClient.instance.client.load_world(worldName)
         for layer in layer_to_unload: self.world.unload_map_layer(layer.value)
         if self._synchronousMode: self.setSynchronous_fixed_delta_seconds()
+        #rendering mode
+        settings = self.world.get_settings()
+        settings.no_rendering_mode = not self._renderingMode
+        self.world.apply_settings(settings)
+
+            
 
     def setSynchronous_fixed_delta_seconds(self):
         settings = self.world.get_settings()
         settings.synchronous_mode = True
         settings.fixed_delta_seconds = True
-        #settings.no_rendering_mode = False
+        settings.no_rendering_mode = not self._renderingMode
         settings.fixed_delta_seconds = self._fixed_delta_seconds
         self.world.apply_settings(settings)
