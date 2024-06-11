@@ -17,7 +17,6 @@ class CarlaClient():
         try:
             self._client = carla.Client(self._host, self._port)
             self._client.set_timeout(15)
-            #self._world = self._client.get_world()
         except Exception as e:
             CarlaClient._instance = None
             raise Exception("error from CarlaClient class while connecting to carla simulator")
