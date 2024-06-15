@@ -1,6 +1,6 @@
 import abc
 import carla
-from enum import Enum
+from enum import Enum, auto
 
 from pycarlanet.utils import preconditions
 
@@ -11,12 +11,12 @@ from pycarlanet.utils import preconditions
 
 class ActorType(Enum):
     #TODO define module omnet for each type
-    Sensor = 'a'
-    Spectator = 'b'
-    Traffic_sign = 'c'
-    Traffic_light = 'd'
-    Vehicle = 'e'
-    Walkers = 'f'
+    Sensor = auto()
+    Spectator = auto()
+    Traffic_sign = auto()
+    Traffic_light = auto()
+    Vehicle = auto()
+    Walkers = auto()
 
 class CarlanetActor(abc.ABC):
 
