@@ -7,7 +7,6 @@ from pycarlanet.enum import CarlaMaplayers, SimulatorStatus
 from pycarlanet.utils import InstanceExist
 from pycarlanet import CarlaClient
 
-
 class WorldManager(abc.ABC):
 
     _synchronousMode: bool
