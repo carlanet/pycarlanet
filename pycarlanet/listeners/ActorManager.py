@@ -85,7 +85,7 @@ class ActorManager(abc.ABC):
             position['rotation'] = [transform.rotation.pitch, transform.rotation.yaw, transform.rotation.roll]
             position['velocity'] = [velocity.x, velocity.y, velocity.z]
             #position['is_net_active'] = actor.alive
-            position['actor_type'] = actor.actor_type
+            position['actor_type'] = actor.actor_type.name
             nodes_positions.append(position)
         return nodes_positions
 
@@ -93,7 +93,7 @@ class BasicActorManager(ActorManager):
     #_agents = dict(int, ?actor)
 
     # INIT PHASE
-    def omnet_init_completed(self, message): return
+    def omnet_init_completed(self, message): ...
     
     # RUN PHASE
     def before_world_tick(self, timestamp): return
