@@ -4,6 +4,7 @@ import carla
 
 from pycarlanet.enum import SimulatorStatus
 from pycarlanet import CarlanetActor, ActorType
+from pycarlanet.utils import InstanceExist
 
 
 class ActorManager(abc.ABC):
@@ -17,7 +18,8 @@ class ActorManager(abc.ABC):
         """
         #:param run_id: id corresponding to the one in OMNeT++
         #:param carla_configuration:
-        #:param user_defined:
+        #:param user_defined:        
+        for e in message['actor_types']: ActorType.instance.add_new_type(e)
         self.create_actors_from_omnet(message['moving_actors'])
         #create carla actors from configuration file
 
@@ -58,7 +60,7 @@ class ActorManager(abc.ABC):
         """
         ...
     
-    def add_carla_actor_to_omnet(self, actor:carla.Actor, actor_type: ActorType):
+    def add_carla_actor_to_omnet(self, actor:carla.Actor, actor_type: str):
         """
         Called to add a carla actor to the list and communicate in next step to omnet
         :param actor:carla.Actor
@@ -84,17 +86,11 @@ class ActorManager(abc.ABC):
             position['position'] = [transform.location.x, transform.location.y, transform.location.z]
             position['rotation'] = [transform.rotation.pitch, transform.rotation.yaw, transform.rotation.roll]
             position['velocity'] = [velocity.x, velocity.y, velocity.z]
-            #position['is_net_active'] = actor.alive
             position['actor_type'] = actor.actor_type.name
             nodes_positions.append(position)
         return nodes_positions
 
 class BasicActorManager(ActorManager):
-    #_agents = dict(int, ?actor)
-
-    # INIT PHASE
-    def omnet_init_completed(self, message): ...
-    
     # RUN PHASE
     def before_world_tick(self, timestamp): return
     def _generate_carla_nodes_positions(self): return []
