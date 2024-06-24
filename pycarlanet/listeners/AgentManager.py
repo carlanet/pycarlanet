@@ -47,4 +47,7 @@ class BasicAgentManager(AgentManager):
     def omnet_init_completed(self, message): return
     
     # RUN PHASE
-    #def before_world_tick(self, timestamp): ...
+    #def before_world_tick(self, timestamp): ..
+
+    def generic_message(self, timestamp, message) -> (SimulatorStatus, dict):
+        return SimulatorStatus.RUNNING, {"message": "from carla"}

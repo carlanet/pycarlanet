@@ -94,3 +94,5 @@ class BasicActorManager(ActorManager):
     # RUN PHASE
     def before_world_tick(self, timestamp): return
     def _generate_carla_nodes_positions(self): return []
+    def generic_message(self, timestamp, message) -> (SimulatorStatus, dict):
+        return SimulatorStatus.RUNNING, {"message": "from carla"}
