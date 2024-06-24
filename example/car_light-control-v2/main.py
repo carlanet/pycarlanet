@@ -1,7 +1,9 @@
+import random
 import carla
+
 import time
 
-from carla.libcarla import World
+from carla.libcarla import ActorBlueprint, World
 
 import inspect
 
