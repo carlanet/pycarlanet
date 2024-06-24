@@ -99,7 +99,7 @@ class actorManager(ActorManager):
                 #camera_sensor.attach_to_actor(self.sim_world, carla_actor)
                 return carlanet_actor
             else:
-                raise RuntimeError(f'I don\'t know this type {actor_type}')
+                raise RuntimeError(f"I don\'t know this type {actor['actor_type']}")
 
     def generic_message(self, timestamp, message) -> (SimulatorStatus, dict):
         print("actor generic_message")
@@ -131,7 +131,7 @@ class agentManager(AgentManager):
                 'msg_type': 'LIGHT_COMMAND',
                 'light_next_state': _light_control_enum_to_str(next_light_state)
             }
-            
+
             return SimulatorStatus.RUNNING, msg_to_send
         else:
             raise RuntimeError(f"I don\'t know this type {message['msg_type']}")
