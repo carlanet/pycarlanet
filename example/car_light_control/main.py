@@ -1,4 +1,5 @@
 import random
+import sys
 import carla
 from carla import libcarla, ActorBlueprint, World
 import traceback
@@ -203,10 +204,14 @@ class RemoteAgent:
             next_state = carla.VehicleLightState.NONE
         return next_state
 
-
-
-
 if __name__ == '__main__':
-    #my_world = MyWorld('192.168.1.37', 2000)
-    my_world = MyWorld('marine', 5000)
+    # Parse arguments
+    if len(sys.argv) < 3 or sys.argv[1] == '--help' or sys.argv[1] == '-h':
+        print('Usage: python main.py <carla_server_host> <carla_server_port>')
+        sys.exit(1)
+
+    carla_server_host = sys.args[1]
+    carla_server_port = int(sys.args[2])
+
+    my_world = MyWorld(carla_server_host, carla_server_port)
     my_world.start_simulation()
