@@ -10,10 +10,10 @@ setup(
     long_description_content_type='text/markdown',
     author="Valerio Cislaghi, Christian Quadri, Stefano di Terlizzi",
     license='MIT',
-    python_requires='>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,<3.9',
+    python_requires='>=3.6,<3.13',
     install_requires=[
-        'pyzmq==23.2.1',
-        'carla==0.9.*'
+        'pyzmq==27.1.0',
+        'carla==0.9.16'
     ],
     project_urls={
         'Source': 'https://github.com/jaivra/pycarlanet',
