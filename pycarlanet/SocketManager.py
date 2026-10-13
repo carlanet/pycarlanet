@@ -120,8 +120,9 @@ class InitMessageHandlerState(MessageHandlerState):
         res['message_type'] = 'INIT_COMPLETED'
         res['initial_timestamp'] = SocketManager.instance._worldManager.get_elapsed_seconds()
         res['simulation_status'] = sim_status.value
-        #res['actor_positions'] = SocketManager.instance._actorManager._generate_carla_nodes_positions()
-        res['actor_positions'] = []
+        # Lets carlanetpp bind the actors created above to the static OMNeT modules with
+        # the same carla_id: every actor of the scenario needs its carla_id in the ini.
+        res['actor_positions'] = SocketManager.instance._actorManager._generate_carla_nodes_positions()
 
         if sim_status == SimulatorStatus.RUNNING: SocketManager.instance.set_message_handler_state(RunningMessageHandlerState)
 
